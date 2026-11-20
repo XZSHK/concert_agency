@@ -2,100 +2,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="620" d:DesignHeight="800"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="750"
         x:Class="Avalon.RegisterWindow"
-        Title="Регистрация — Арт-Престиж"
+        Title="Регистрация - Апр-Престиж"
         WindowStartupLocation="CenterScreen"
-        Width="620" Height="800"
+        Width="600" Height="750"
         CanResize="True"
-        Background="#0F0F18"
-        FontFamily="Inter, Segoe UI, Arial">
-
-    <Window.Resources>
-        <RadialGradientBrush x:Key="RegisterGlow" Center="50%,15%" Radius="90%">
-            <GradientStop Offset="0" Color="#332900" />
-            <GradientStop Offset="0.45" Color="#181828" />
-            <GradientStop Offset="1" Color="#0F0F18" />
-        </RadialGradientBrush>
-    </Window.Resources>
-
-    <Window.Styles>
-        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFE255" />
-        </Style>
-        <Style Selector="TextBox:focus /template/ Border">
-            <Setter Property="BorderBrush" Value="#FFD700" />
-        </Style>
-        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.75" />
-        </Style>
-    </Window.Styles>
-
+        Background="#121212"> <!-- Тёмный фон -->
+    
     <Grid>
-        <Border Background="{StaticResource RegisterGlow}" IsHitTestVisible="False"/>
-
-        <Border CornerRadius="22" Margin="28" Padding="36" VerticalAlignment="Center"
-                Background="#17172A" BorderBrush="#2E2E46" BorderThickness="1"
-                BoxShadow="0 24 60 0 #66000000">
-            <ScrollViewer Padding="0">
-                <StackPanel VerticalAlignment="Center" Spacing="14">
-
-                    <StackPanel Spacing="6" Margin="0,0,0,8">
-                        <TextBlock Text="НОВЫЙ АККАУНТ" FontSize="22" FontWeight="Black"
-                                   HorizontalAlignment="Center" Foreground="#FFD700" LetterSpacing="3"/>
-                        <TextBlock Text="Регистрация покупателя билетов «Арт-Престиж»"
-                                   FontSize="13" HorizontalAlignment="Center" Foreground="#8F8FA6"/>
+        <Border Background="#1E1E2F" CornerRadius="20" Margin="30" BoxShadow="0 15 30 0 #80000000" BorderBrush="#333355" BorderThickness="1">
+            <ScrollViewer>
+                <StackPanel VerticalAlignment="Center" Spacing="15" Margin="50">
+                    
+                    <StackPanel Spacing="5" Margin="0,0,0,20">
+                        <TextBlock Text="Создать аккаунт" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Foreground="#FFD700"/>
+                        <TextBlock Text="Присоединяйтесь к агентству «Апр-Престиж»" FontSize="14" HorizontalAlignment="Center" Foreground="#8A8A9E"/>
                     </StackPanel>
 
-                    <!-- ФИО -->
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="ФИО" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtFullName" PlaceholderText="Иванов Иван Иванович"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14"
-                                 Padding="12,11" TextChanged="TxtFullName_TextChanged"/>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="ФИО" Foreground="#AAAAAA" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox x:Name="TxtFullName" PlaceholderText="Иванов Иван Иванович" Height="45" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" FontSize="14" TextChanged="TxtFullName_TextChanged"/>
                     </StackPanel>
 
-                    <!-- Email -->
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="EMAIL" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtEmail" PlaceholderText="example@mail.ru"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Email" Foreground="#AAAAAA" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox x:Name="TxtEmail" PlaceholderText="example@mail.ru" Height="45" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" FontSize="14"/>
                     </StackPanel>
 
-                    <!-- Телефон (маска +7 (___) ___-__-__) -->
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="ТЕЛЕФОН" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtPhone" PlaceholderText="+7 (999) 123-45-67" MaxLength="18"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14"
-                                 Padding="12,11" TextChanged="TxtPhone_TextChanged"/>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Телефон" Foreground="#AAAAAA" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox x:Name="TxtPhone" PlaceholderText="+7 (999) 123-45-67" Height="45" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" FontSize="14" TextChanged="TxtPhone_TextChanged"/>
                     </StackPanel>
 
-                    <!-- Пароль -->
-                    <StackPanel Spacing="6">
-                        <TextBlock Text="ПАРОЛЬ" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="●"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                    <StackPanel Spacing="5">
+                        <TextBlock Text="Пароль" Foreground="#AAAAAA" FontSize="14" FontWeight="SemiBold"/>
+                        <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="●" Height="45" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" FontSize="14"/>
                     </StackPanel>
 
-                    <CheckBox x:Name="ChkPromo" Content="Получать промокоды и скидки"
-                              FontSize="14" Foreground="#E6E6F0" Margin="0,6"/>
+                    <CheckBox x:Name="ChkPromo" Content="Получать промокоды и скидки" FontSize="14" Foreground="#E0E0E0" Margin="0,10,0,10"/>
 
-                    <Button x:Name="BtnRegister" Classes="accent" Content="ЗАРЕГИСТРИРОВАТЬСЯ"
-                            HorizontalAlignment="Stretch" Height="48" Margin="0,6,0,0"
-                            Background="#FFD700" Foreground="#121212" FontSize="15" FontWeight="Bold"
-                            CornerRadius="10" Click="BtnRegister_Click"/>
+                    <Button x:Name="BtnRegister" Content="Зарегистрироваться" HorizontalAlignment="Stretch" Height="50" 
+                            Background="#FFD700" Foreground="#121212" FontSize="16" FontWeight="Bold" 
+                            CornerRadius="8" Click="BtnRegister_Click" Margin="0,10,0,0"/>
 
-                    <Button x:Name="BtnBack" Classes="link" Content="Уже есть аккаунт? Войти"
-                            HorizontalAlignment="Stretch" Background="Transparent"
-                            Foreground="#2BEE8C" FontSize="13" Padding="6,6" Click="BtnBack_Click"/>
+                    <Button x:Name="BtnBack" Content="Уже есть аккаунт? Войти" HorizontalAlignment="Stretch" Height="40" 
+                            Background="Transparent" Foreground="#00FF88" FontSize="14" Click="BtnBack_Click"/>
 
-                    <TextBlock x:Name="TxtMessage" Text="" Foreground="#FF5A5A"
-                               HorizontalAlignment="Center" IsVisible="False"
-                               FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
+                    <TextBlock x:Name="TxtMessage" Text="" Foreground="#FF5555" 
+                               HorizontalAlignment="Center" IsVisible="False" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="13"/>
+                
                 </StackPanel>
             </ScrollViewer>
         </Border>

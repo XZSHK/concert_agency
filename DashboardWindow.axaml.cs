@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using Avalon.Core;
 using Avalon.Services;
 
@@ -24,13 +23,7 @@ public class ConcertEvent
     public int ParterreCapacity { get; set; }
     public int VipCapacity { get; set; }
     public string ImagePath { get; set; } = "";
-
-    /// <summary>Цена VIP с бейджем (base + 500).</summary>
-    public decimal VipFinalPrice => OrderCalculator.FinalSeatCost("VIP", VipPrice);
-
-    /// <summary>Картинка карточки: файл из папки img/, либо URL/полный путь, иначе placeholder.
-    /// Возвращает готовый Bitmap — Avalonia не конвертирует string в Image.Source сама.</summary>
-    public Avalonia.Media.Imaging.Bitmap? ImageSource => ImageSourceHelper.TryLoadBitmap(ImagePath);
+    public string ImageSource => string.IsNullOrEmpty(ImagePath) ? "avares://Avalon/img/placeholder.jpg" : $"avares://Avalon/img/{ImagePath}";
 }
 
 public class MyOrder
@@ -41,11 +34,6 @@ public class MyOrder
     public DateTime EventDate { get; set; }
     public decimal TotalAmount { get; set; }
     public string Status { get; set; } = "";
-
-    // Доступность действий по FSM (ТЗ): кнопки в таблице включаются/отключаются автоматически.
-    public bool CanPay => Status == OrderStatus.Booking;
-    public bool CanExport => Status == OrderStatus.Paid || Status == OrderStatus.Issued || Status == OrderStatus.EntryPassed;
-    public bool CanCancel => OrderStateMachine.CanRefund(Status, EventDate, DateTime.Now);
 }
 
 public partial class DashboardWindow : Window
@@ -54,12 +42,7 @@ public partial class DashboardWindow : Window
     public ObservableCollection<MyOrder> MyOrders { get; set; } = new();
 
     public string CurrentUserName { get; set; } = "";
-
-    /// <summary>id покупателя в ticket_buyers; 0 — профиль сотрудника без покупательских функций.</summary>
-    public int BuyerId { get; set; }
-
-    private bool _isUpdatingPhone = false;
-    private bool _isUpdatingName = false;
+    private int _currentBuyerId = 0;
 
     public DashboardWindow()
     {
@@ -67,47 +50,36 @@ public partial class DashboardWindow : Window
         this.DataContext = this;
     }
 
-    public DashboardWindow(int buyerId, string userName) : this()
+    public DashboardWindow(string userName) : this()
     {
-        BuyerId = buyerId;
         CurrentUserName = userName;
-
         TxtUserName.Text = userName;
-        TxtAvatarInitials.Text = InitialsOf(userName);
 
+        LoadBuyerId();
         LoadEvents();
-        LoadMyOrders();
         LoadProfile();
     }
 
-    private static string InitialsOf(string name)
+    private void LoadBuyerId()
     {
-        var parts = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        var initials = string.Concat(parts.Take(2).Select(p => char.ToUpperInvariant(p[0])));
-        return string.IsNullOrEmpty(initials) ? "Я" : initials;
+        try
+        {
+            using var conn = DatabaseHelper.GetConnection();
+            using var cmd = new MySqlCommand("SELECT id FROM ticket_buyers WHERE full_name = @name LIMIT 1", conn);
+            cmd.Parameters.AddWithValue("@name", CurrentUserName);
+            var result = cmd.ExecuteScalar();
+            if (result != null) _currentBuyerId = Convert.ToInt32(result);
+        }
+        catch (Exception ex) { Console.WriteLine($"[DB ERROR] LoadBuyerId: {ex.Message}"); }
     }
-
-    // ---------- Данные ----------
 
     private void LoadEvents()
     {
         try
         {
             Events.Clear();
-            SetEventsMessage(null);
-
             using var connection = DatabaseHelper.GetConnection();
-
-            const string baseQuery = @"
-                SELECT ce.id, ce.artist_group_name, ce.event_date, ch.hall_name, ce.age_restriction,
-                       ce.parterre_price, ce.vip_price,
-                       ch.parterre_capacity, ch.vip_capacity,
-                       ce.image_path
-                FROM concert_events ce
-                JOIN concert_halls ch ON ce.hall_id = ch.id
-                ORDER BY ce.event_date ASC";
-
-            const string legacyQuery = @"
+            string query = @"
                 SELECT ce.id, ce.artist_group_name, ce.event_date, ch.hall_name, ce.age_restriction,
                        ce.parterre_price, ce.vip_price,
                        ch.parterre_capacity, ch.vip_capacity
@@ -115,51 +87,26 @@ public partial class DashboardWindow : Window
                 JOIN concert_halls ch ON ce.hall_id = ch.id
                 ORDER BY ce.event_date ASC";
 
-            List<ConcertEvent> loaded;
-            try
+            using var cmd = new MySqlCommand(query, connection);
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
             {
-                // Основной запрос: image_path может отсутствовать в старой БД.
-                loaded = ReadEvents(connection, baseQuery, includeImage: true);
+                Events.Add(new ConcertEvent
+                {
+                    Id = reader.GetInt32("id"),
+                    ArtistName = reader.GetString("artist_group_name"),
+                    EventDate = reader.GetDateTime("event_date"),
+                    HallName = reader.GetString("hall_name"),
+                    AgeRestriction = reader.IsDBNull(reader.GetOrdinal("age_restriction")) ? "0+" : reader.GetString("age_restriction"),
+                    ParterrePrice = reader.GetDecimal("parterre_price"),
+                    VipPrice = reader.GetDecimal("vip_price"),
+                    ParterreCapacity = reader.GetInt32("parterre_capacity"),
+                    VipCapacity = reader.GetInt32("vip_capacity"),
+                    ImagePath = ""
+                });
             }
-            catch (MySqlException)
-            {
-                loaded = ReadEvents(connection, legacyQuery, includeImage: false);
-            }
-
-            foreach (var ev in loaded) Events.Add(ev);
-
-            if (Events.Count == 0)
-                SetEventsMessage("Афиша пока пуста — загляните позже.");
         }
-        catch (Exception ex)
-        {
-            SetEventsMessage($"Не удалось загрузить афишу: {ex.Message}");
-        }
-    }
-
-    private static List<ConcertEvent> ReadEvents(MySqlConnection connection, string query, bool includeImage)
-    {
-        var result = new List<ConcertEvent>();
-        using var cmd = new MySqlCommand(query, connection);
-        using var reader = cmd.ExecuteReader();
-        while (reader.Read())
-        {
-            result.Add(new ConcertEvent
-            {
-                Id = reader.GetInt32("id"),
-                ArtistName = reader.GetString("artist_group_name"),
-                EventDate = reader.GetDateTime("event_date"),
-                HallName = reader.GetString("hall_name"),
-                AgeRestriction = reader.IsDBNull(reader.GetOrdinal("age_restriction")) ? "0+" : reader.GetString("age_restriction"),
-                ParterrePrice = reader.GetDecimal("parterre_price"),
-                VipPrice = reader.GetDecimal("vip_price"),
-                ParterreCapacity = reader.GetInt32("parterre_capacity"),
-                VipCapacity = reader.GetInt32("vip_capacity"),
-                ImagePath = includeImage && !reader.IsDBNull(reader.GetOrdinal("image_path"))
-                    ? reader.GetString("image_path") : ""
-            });
-        }
-        return result;
+        catch (Exception ex) { Console.WriteLine($"[DB ERROR] LoadEvents: {ex.Message}"); }
     }
 
     private void LoadMyOrders()
@@ -167,14 +114,10 @@ public partial class DashboardWindow : Window
         try
         {
             MyOrders.Clear();
-            if (BuyerId == 0)
-            {
-                ShowOrdersMessage("Раздел доступен только покупателям.", false);
-                return;
-            }
+            if (_currentBuyerId == 0) return;
 
             using var conn = DatabaseHelper.GetConnection();
-            const string query = @"
+            string query = @"
                 SELECT o.id, o.order_reference, o.total_amount, o.status, e.artist_group_name, e.event_date
                 FROM ticket_orders o
                 JOIN concert_events e ON o.event_id = e.id
@@ -182,7 +125,7 @@ public partial class DashboardWindow : Window
                 ORDER BY o.order_datetime DESC";
 
             using var cmd = new MySqlCommand(query, conn);
-            cmd.Parameters.AddWithValue("@buyerId", BuyerId);
+            cmd.Parameters.AddWithValue("@buyerId", _currentBuyerId);
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
@@ -197,39 +140,29 @@ public partial class DashboardWindow : Window
                 });
             }
         }
-        catch (Exception ex) { ShowOrdersMessage($"Не удалось загрузить заказы: {ex.Message}", false); }
+        catch (Exception ex) { Console.WriteLine($"[DB ERROR] LoadMyOrders: {ex.Message}"); }
     }
 
     private void LoadProfile()
     {
         try
         {
-            if (BuyerId == 0) return;
-
+            if (_currentBuyerId == 0) return;
             using var conn = DatabaseHelper.GetConnection();
             using var cmd = new MySqlCommand(
                 "SELECT full_name, email, phone, has_promo_subscription FROM ticket_buyers WHERE id = @id", conn);
-            cmd.Parameters.AddWithValue("@id", BuyerId);
+            cmd.Parameters.AddWithValue("@id", _currentBuyerId);
             using var reader = cmd.ExecuteReader();
             if (reader.Read())
             {
                 TxtProfileName.Text = reader.GetString("full_name");
                 TxtProfileEmail.Text = reader.GetString("email");
-                TxtProfilePhone.Text = reader.IsDBNull(reader.GetOrdinal("phone"))
-                    ? "" : reader.GetString("phone");
-                TxtProfilePromo.Text = reader.GetBoolean("has_promo_subscription")
-                    ? "Активна (сбор 0%)" : "Не активирована";
+                TxtProfilePhone.Text = reader.IsDBNull(reader.GetOrdinal("phone")) ? "Не указан" : reader.GetString("phone");
+                TxtProfilePromo.Text = reader.GetBoolean("has_promo_subscription") ? "Активна" : "Не активна";
             }
         }
-        catch (Exception ex)
-        {
-            TxtProfileMessage.Text = $"Не удалось загрузить профиль: {ex.Message}";
-            TxtProfileMessage.Foreground = Brushes.Red;
-            TxtProfileMessage.IsVisible = true;
-        }
+        catch (Exception ex) { Console.WriteLine($"[DB ERROR] LoadProfile: {ex.Message}"); }
     }
-
-    // ---------- Навигация по панелям ----------
 
     private void ShowEvents_Click(object? sender, RoutedEventArgs e)
     {
@@ -240,15 +173,12 @@ public partial class DashboardWindow : Window
         LoadEvents();
     }
 
-    private void BtnRefreshEvents_Click(object? sender, RoutedEventArgs e) => LoadEvents();
-
     private void ShowMyTickets_Click(object? sender, RoutedEventArgs e)
     {
         TxtHeader.Text = "Мои билеты";
         PanelEvents.IsVisible = false;
         PanelMyTickets.IsVisible = true;
         PanelProfile.IsVisible = false;
-        TxtOrdersMessage.IsVisible = false;
         LoadMyOrders();
     }
 
@@ -261,26 +191,18 @@ public partial class DashboardWindow : Window
         LoadProfile();
     }
 
-    // ---------- Покупка ----------
-
     private void BtnBuyTicket_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ConcertEvent selectedEvent)
         {
-            if (BuyerId == 0)
-            {
-                SetEventsMessage("Покупка доступна только покупателям. Войдите под покупателем.");
-                return;
-            }
-
-            var bookingWindow = new BookingWindow(selectedEvent, BuyerId, CurrentUserName);
+            var bookingWindow = new BookingWindow(selectedEvent, CurrentUserName);
             bookingWindow.ShowDialog(this);
             LoadEvents();
             LoadMyOrders();
         }
     }
 
-    // ---------- Действия с заказами по FSM ----------
+    // --- Действия с заказами по FSM ---
 
     private void BtnPayOrder_Click(object? sender, RoutedEventArgs e)
     {
@@ -291,7 +213,10 @@ public partial class DashboardWindow : Window
             ShowOrdersMessage($"Заказ {order.OrderRef} оплачен и выписан.", true);
             LoadMyOrders();
         }
-        catch (Exception ex) { ShowOrdersMessage(ex.Message, false); }
+        catch (Exception ex)
+        {
+            ShowOrdersMessage(ex.Message, false);
+        }
     }
 
     private void BtnExportOrder_Click(object? sender, RoutedEventArgs e)
@@ -306,7 +231,10 @@ public partial class DashboardWindow : Window
             var (txtPath, pngPath, signature) = TicketExportService.Export(ticket, folder);
             ShowOrdersMessage($"Билет сохранён: {txtPath}\nQR: {pngPath}\nSHA256: {signature}", true);
         }
-        catch (Exception ex) { ShowOrdersMessage($"Ошибка экспорта: {ex.Message}", false); }
+        catch (Exception ex)
+        {
+            ShowOrdersMessage($"Ошибка экспорта: {ex.Message}", false);
+        }
     }
 
     private void BtnCancelOrder_Click(object? sender, RoutedEventArgs e)
@@ -322,7 +250,6 @@ public partial class DashboardWindow : Window
         {
             // Сюда попадает и запрет возврата < 24 ч из FSM.
             ShowOrdersMessage(ex.Message, false);
-            LoadMyOrders();
         }
     }
 
@@ -374,96 +301,8 @@ public partial class DashboardWindow : Window
     private void ShowOrdersMessage(string message, bool isSuccess)
     {
         TxtOrdersMessage.Text = message;
-        TxtOrdersMessage.Foreground = isSuccess ? Brushes.LightGreen : Brushes.Red;
+        TxtOrdersMessage.Foreground = isSuccess ? Brushes.Green : Brushes.Red;
         TxtOrdersMessage.IsVisible = true;
-    }
-
-    // ---------- Профиль ----------
-
-    private void TxtProfileName_TextChanged(object? sender, TextChangedEventArgs e)
-    {
-        if (_isUpdatingName) return;
-        _isUpdatingName = true;
-
-        string cleaned = InputMasks.FormatFullName(TxtProfileName.Text);
-        if (cleaned != TxtProfileName.Text)
-        {
-            TxtProfileName.Text = cleaned;
-            TxtProfileName.CaretIndex = cleaned.Length;
-        }
-
-        _isUpdatingName = false;
-    }
-
-    private void TxtProfilePhone_TextChanged(object? sender, TextChangedEventArgs e)
-    {
-        if (_isUpdatingPhone) return;
-        _isUpdatingPhone = true;
-
-        string formatted = InputMasks.FormatPhone(TxtProfilePhone.Text);
-        TxtProfilePhone.Text = formatted;
-        TxtProfilePhone.CaretIndex = formatted.Length;
-
-        _isUpdatingPhone = false;
-    }
-
-    private void BtnSaveProfile_Click(object? sender, RoutedEventArgs e)
-    {
-        string name = TxtProfileName.Text?.Trim() ?? "";
-        string email = TxtProfileEmail.Text?.Trim() ?? "";
-        string phone = TxtProfilePhone.Text?.Trim() ?? "";
-
-        if (!InputMasks.IsValidFullName(name))
-        {
-            SetProfileMessage("Введите корректное ФИО (например: Иванов Иван)", false);
-            return;
-        }
-
-        if (!InputMasks.IsValidEmail(email))
-        {
-            SetProfileMessage("Введите корректный Email", false);
-            return;
-        }
-
-        if (phone.Length > 0 && !InputMasks.IsCompletePhone(phone))
-        {
-            SetProfileMessage("Телефон должен быть полностью: +7 (999) 123-45-67", false);
-            return;
-        }
-
-        try
-        {
-            using var conn = DatabaseHelper.GetConnection();
-            using var cmd = new MySqlCommand(
-                "UPDATE ticket_buyers SET full_name = @name, email = @email, phone = @phone WHERE id = @id", conn);
-            cmd.Parameters.AddWithValue("@name", name);
-            cmd.Parameters.AddWithValue("@email", email);
-            cmd.Parameters.AddWithValue("@phone", phone.Length == 0 ? DBNull.Value : phone);
-            cmd.Parameters.AddWithValue("@id", BuyerId);
-            cmd.ExecuteNonQuery();
-
-            CurrentUserName = name;
-            TxtUserName.Text = name;
-            TxtAvatarInitials.Text = InitialsOf(name);
-            SetProfileMessage("Профиль обновлён.", true);
-        }
-        catch (Exception ex)
-        {
-            SetProfileMessage($"Ошибка: {ex.Message}", false);
-        }
-    }
-
-    private void SetProfileMessage(string message, bool isSuccess)
-    {
-        TxtProfileMessage.Text = message;
-        TxtProfileMessage.Foreground = isSuccess ? Brushes.LightGreen : Brushes.Red;
-        TxtProfileMessage.IsVisible = true;
-    }
-
-    private void SetEventsMessage(string? message)
-    {
-        TxtEventsMessage.Text = message ?? "";
-        TxtEventsMessage.IsVisible = !string.IsNullOrEmpty(message);
     }
 
     private void BtnLogout_Click(object? sender, RoutedEventArgs e)
@@ -471,5 +310,31 @@ public partial class DashboardWindow : Window
         var loginWindow = new MainWindow();
         loginWindow.Show();
         this.Close();
+    }
+
+    private void BtnSaveProfile_Click(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            using var conn = DatabaseHelper.GetConnection();
+            using var cmd = new MySqlCommand(
+                "UPDATE ticket_buyers SET full_name = @name, email = @email, phone = @phone WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("@name", TxtProfileName.Text ?? "");
+            cmd.Parameters.AddWithValue("@email", TxtProfileEmail.Text ?? "");
+            cmd.Parameters.AddWithValue("@phone", TxtProfilePhone.Text ?? "");
+            cmd.Parameters.AddWithValue("@id", _currentBuyerId);
+            cmd.ExecuteNonQuery();
+
+            TxtProfileMessage.Text = "Профиль успешно обновлен!";
+            TxtProfileMessage.IsVisible = true;
+            CurrentUserName = TxtProfileName.Text ?? "";
+            TxtUserName.Text = CurrentUserName;
+        }
+        catch (Exception ex)
+        {
+            TxtProfileMessage.Text = $"Ошибка: {ex.Message}";
+            TxtProfileMessage.Foreground = Brushes.Red;
+            TxtProfileMessage.IsVisible = true;
+        }
     }
 }

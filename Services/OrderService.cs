@@ -19,14 +19,12 @@ public static class OrderService
     /// Создать заказ в статусе 'Бронь (15 мин)'.
     /// Проверяет квоты зала (партер/VIP), рассчитывает суммы, генерирует номер по маске ТЗ.
     /// </summary>
-    /// <param name="staffUserId">Сотрудник, оформивший заказ, либо null (заказ делает сам покупатель).</param>
     public static long CreateBooking(
         int buyerId, int eventId,
         int parterreQty, int vipQty,
         decimal parterrePrice, decimal vipPrice,
         bool hasPromoSubscription,
-        int parterreCapacity, int vipCapacity,
-        int? staffUserId = null)
+        int parterreCapacity, int vipCapacity)
     {
         var totals = OrderCalculator.Calculate(
             parterreQty, vipQty, parterrePrice, vipPrice, hasPromoSubscription);
@@ -52,10 +50,9 @@ public static class OrderService
         using (var cmd = new MySqlCommand(
             @"INSERT INTO ticket_orders
                 (order_reference, user_id, buyer_id, event_id, order_datetime, service_fee, total_amount, status)
-              VALUES (@ref, @user, @buyer, @event, @date, @fee, @total, @status)", conn, tx))
+              VALUES (@ref, 1, @buyer, @event, @date, @fee, @total, @status)", conn, tx))
         {
             cmd.Parameters.AddWithValue("@ref", orderRef);
-            cmd.Parameters.AddWithValue("@user", (object?)staffUserId ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@buyer", buyerId);
             cmd.Parameters.AddWithValue("@event", eventId);
             cmd.Parameters.AddWithValue("@date", DateTime.Now);

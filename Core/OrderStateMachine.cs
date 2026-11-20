@@ -8,12 +8,7 @@ namespace Avalon.Core;
 ///
 /// Разрешённая цепочка:
 ///   'Бронь (15 мин)' -> 'Оплачен' -> 'Выписан' -> 'Контроль на входе пройден'
-///   'Бронь (15 мин)' / 'Оплачен' / 'Выписан' -> 'Возврат билета'
-///
-/// Возврат ОПЛАЧЕННОГО билета ('Оплачен'/'Выписан') запрещён менее чем за 24 часа
-/// до концерта. Отмена и истечение неоплаченной брони ('Бронь (15 мин)') деньгами
-/// не является, поэтому правилом 24 часов не ограничивается — иначе истёкшая
-/// бронь навсегда занимала бы места.
+///   'Бронь (15 мин)' / 'Оплачен' / 'Выписан' -> 'Возврат билета' (если до концерта >= 24 ч)
 ///
 /// Любой недопустимый переход и редактирование закрытого документа
 /// бросают <see cref="InvalidOperationException"/> (Тест 4, ПК 1.4).
@@ -44,21 +39,9 @@ public static class OrderStateMachine
     }
 
     /// <summary>
-    /// Можно ли оформить возврат именно сейчас: переход по FSM допустим
-    /// и (для оплаченных заказов) не нарушено правило 24 часов.
-    /// Используется для доступности кнопок «Отменить»/«Возврат» в UI.
-    /// </summary>
-    public static bool CanRefund(string from, DateTime eventDate, DateTime now)
-    {
-        if (!CanTransition(from, OrderStatus.Refund)) return false;
-        if (from == OrderStatus.Booking) return true; // неоплаченная бронь деньгами не является
-        return eventDate - now >= TimeSpan.FromHours(24);
-    }
-
-    /// <summary>
     /// Выполнить переход. Бросает <see cref="InvalidOperationException"/> при:
     ///  - недопустимом переходе FSM;
-    ///  - возврате ОПЛАЧЕННОГО билета менее чем за 24 часа до концерта;
+    ///  - возврате менее чем за 24 часа до концерта;
     ///  - попытке перехода из закрытого (терминального) статуса.
     /// </summary>
     /// <param name="currentStatus">Текущий статус заказа.</param>
@@ -83,10 +66,8 @@ public static class OrderStateMachine
             throw new InvalidOperationException(
                 $"Недопустимый переход FSM: '{currentStatus}' -> '{targetStatus}'.");
 
-        if (targetStatus == OrderStatus.Refund && currentStatus != OrderStatus.Booking)
+        if (targetStatus == OrderStatus.Refund)
         {
-            // Правило 24 часов действует только на возврат уже оплаченных билетов.
-            // Отмена/истечение неоплаченной брони не является финансовым возвратом.
             TimeSpan untilEvent = eventDate - now;
             if (untilEvent < TimeSpan.FromHours(24))
                 throw new InvalidOperationException(
