@@ -12,7 +12,7 @@
         FontFamily="Inter, Segoe UI, Arial">
 
     <Window.Resources>
-        <RadialGradientBrush x:Key="LobbyGlow" Center="50%,15%" Radius="90%">
+        <RadialGradientBrush x:Key="LobbyGlow" Center="50%,15%" RadiusX="90%" RadiusY="90%">
             <GradientStop Offset="0" Color="#332900" />
             <GradientStop Offset="0.45" Color="#181828" />
             <GradientStop Offset="1" Color="#0F0F18" />
