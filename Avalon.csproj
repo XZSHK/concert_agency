@@ -1,10 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RootNamespace>Avalon</RootNamespace>
+    <AssemblyName>Avalon</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,5 +16,20 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.2" />
     <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
     <PackageReference Include="MySql.Data" Version="9.0.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+  </ItemGroup>
+
+  <!--
+    SDK-style projects include **/*.cs recursively by default. Exclude the
+    separate test project so its xUnit sources and generated obj/*.cs files do
+    not get compiled into the desktop application (which otherwise causes
+    missing Xunit and duplicate assembly attribute errors).
+  -->
+  <ItemGroup>
+    <Compile Remove="Avalon.Tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="img\**" />
   </ItemGroup>
 </Project>

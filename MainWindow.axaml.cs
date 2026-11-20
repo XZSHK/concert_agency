@@ -1,9 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using System;
-using System.Linq;
 using MySql.Data.MySqlClient;
+using Avalon.Core;
 
 namespace Avalon;
 
@@ -30,66 +31,66 @@ public partial class MainWindow : Window
 
         try
         {
-            using (var connection = DatabaseHelper.GetConnection())
+            using var connection = DatabaseHelper.GetConnection();
+
+            // 1. Сотрудники (users + roles). Пароль проверяем через PasswordHasher:
+            //    принимает и SHA256-хэш (ТЗ: password_hash), и старый открытый пароль.
+            using (var cmd = new MySqlCommand(
+                @"SELECT u.full_name, u.password_hash, r.name AS role_name
+                  FROM users u JOIN roles r ON u.role_id = r.id
+                  WHERE u.login = @login", connection))
             {
-                // 1. Ищем среди СОТРУДНИКОВ (таблица users + роли)
-                string staffQuery = @"
-                    SELECT u.full_name, r.name as role_name 
-                    FROM users u
-                    JOIN roles r ON u.role_id = r.id
-                    WHERE u.login = @login AND u.password_hash = @password";
-
-                using (var cmd = new MySqlCommand(staffQuery, connection))
+                cmd.Parameters.AddWithValue("@login", login);
+                using var reader = cmd.ExecuteReader();
+                if (reader.Read())
                 {
-                    cmd.Parameters.AddWithValue("@login", login);
-                    cmd.Parameters.AddWithValue("@password", password);
-                    
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            string fullName = reader.GetString("full_name");
-                            string roleName = reader.GetString("role_name");
-                            
-                            OpenDashboardForRole(roleName, fullName);
-                            return;
-                        }
-                    }
-                }
+                    string fullName = reader.GetString("full_name");
+                    string storedHash = reader.IsDBNull(reader.GetOrdinal("password_hash"))
+                        ? "" : reader.GetString("password_hash");
+                    string roleName = reader.GetString("role_name");
+                    reader.Close();
 
-                // 2. Если не нашли среди сотрудников, ищем среди ПОКУПАТЕЛЕЙ
-                string buyerQuery = "SELECT full_name FROM ticket_buyers WHERE email = @login AND password = @password";
-                using (var cmd = new MySqlCommand(buyerQuery, connection))
-                {
-                    cmd.Parameters.AddWithValue("@login", login);
-                    cmd.Parameters.AddWithValue("@password", password);
-                    
-                    using (var reader = cmd.ExecuteReader())
+                    if (PasswordHasher.Verify(password, storedHash))
                     {
-                        if (reader.Read())
-                        {
-                            string fullName = reader.GetString("full_name");
-                            OpenDashboardForBuyer(fullName);
-                            return;
-                        }
+                        OpenDashboardForRole(roleName, fullName);
+                        return;
                     }
                 }
             }
 
-            // Если не нашли нигде
+            // 2. Покупатели (ticket_buyers.email + password).
+            using (var cmd = new MySqlCommand(
+                "SELECT full_name, password FROM ticket_buyers WHERE email = @login", connection))
+            {
+                cmd.Parameters.AddWithValue("@login", login);
+                using var reader = cmd.ExecuteReader();
+                if (reader.Read())
+                {
+                    string fullName = reader.GetString("full_name");
+                    string stored = reader.IsDBNull(reader.GetOrdinal("password"))
+                        ? "" : reader.GetString("password");
+                    reader.Close();
+
+                    if (PasswordHasher.Verify(password, stored))
+                    {
+                        OpenDashboardForBuyer(fullName);
+                        return;
+                    }
+                }
+            }
+
             TxtError.Text = "Неверный логин или пароль";
-            TxtError.Foreground = Avalonia.Media.Brushes.Red;
+            TxtError.Foreground = Brushes.Red;
             TxtError.IsVisible = true;
         }
         catch (Exception ex)
         {
             TxtError.Text = $"Ошибка БД: {ex.Message}";
-            TxtError.Foreground = Avalonia.Media.Brushes.Red;
+            TxtError.Foreground = Brushes.Red;
             TxtError.IsVisible = true;
         }
     }
 
-    // Метод для открытия нужного окна в зависимости от роли
     private void OpenDashboardForRole(string roleName, string fullName)
     {
         Window dashboard;
@@ -104,8 +105,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            // На случай других ролей (например, Админ)
-            dashboard = new DashboardWindow(fullName); 
+            dashboard = new DashboardWindow(fullName);
         }
 
         dashboard.Show();
@@ -114,7 +114,7 @@ public partial class MainWindow : Window
 
     private void OpenDashboardForBuyer(string fullName)
     {
-        var dashboard = new DashboardWindow(fullName); // Обычный дашборд для покупателя
+        var dashboard = new DashboardWindow(fullName);
         dashboard.Show();
         this.Close();
     }
@@ -122,6 +122,6 @@ public partial class MainWindow : Window
     private void BtnGoToRegister_Click(object? sender, RoutedEventArgs e)
     {
         var registerWindow = new RegisterWindow();
-        registerWindow.ShowDialog(this); 
+        registerWindow.ShowDialog(this);
     }
 }
