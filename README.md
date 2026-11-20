@@ -15,24 +15,15 @@
 
 1. Установите **Visual Studio 2022** (17.x) с нагрузкой «Разработка классических приложений .NET» и **MySQL Server** (локально).
 2. Откройте **`Avalon.sln`** в Visual Studio.
-3. База данных:
-   - Если БД `Concert_Agency` **уже есть** на вашем компьютере — ничего делать не нужно, приложение подхватит её как раньше.
-   - Если БД нет (чистая установка) — в MySQL Workbench / phpMyAdmin выполните **`database.sql`** (создаст 7 таблиц и тестовые данные; повторный запуск безопасен).
+3. Используйте существующую БД `Concert_Agency`. Приложение не создаёт и не пересоздаёт таблицы автоматически; структура должна соответствовать используемым приложением таблицам и полям, описанным ниже.
 4. Строка подключения по умолчанию: `Server=localhost;Database=Concert_Agency;Uid=root;Pwd=` (root без пароля, как в исходном проекте).
    Если у вас другой пароль/хост — задайте переменную окружения `CONCERT_DB_CONNECTION`, например:
    `Server=localhost;Database=Concert_Agency;Uid=root;Pwd=ваш_пароль`
 5. Нажмите **F5** (или `dotnet run`) — откроется окно входа.
 
-### Тестовые аккаунты (после импорта `database.sql`)
+### Вход и регистрация
 
-| Кто | Логин | Пароль |
-|---|---|---|
-| Продюсер гастрольных туров | `producer` | `producer123` |
-| Менеджер билетной программы | `manager` | `manager123` |
-| Покупатель (промокод активен) | `ivan@example.ru` | `123456` |
-| Покупатель (без промокода) | `maria@example.ru` | `123456` |
-
-Или зарегистрируйте нового покупателя через кнопку «Зарегистрироваться».
+Используйте учётные записи сотрудников и покупателей, уже заведённые в вашей БД. Проект не добавляет тестовые аккаунты автоматически. Нового покупателя можно зарегистрировать через кнопку «Зарегистрироваться».
 
 ### Запуск тестов
 
@@ -54,7 +45,7 @@ dotnet test Avalon.sln
 
 ### База данных (7 таблиц MySQL)
 
-`roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats` — см. `database.sql` (поля 1-в-1 по ТЗ). Два расширения сверх ТЗ (помечены `EXT` в SQL): `ticket_buyers.password` (вход покупателей) и `concert_events.image_path` (афиши).
+Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`.
 
 ### Бизнес-логика и расчётная формула (`Core/OrderCalculator.cs`)
 
@@ -125,6 +116,5 @@ Core/                          — чистая логика без БД/UI: Ord
                                  TicketSignature, PasswordHasher, OrderStatus
 Services/                      — OrderService (транзакции, квоты), TicketExportService, QrCodeHelper
 Avalon.Tests/                  — xUnit-тесты (ПК 1.4)
-database.sql                   — схема БД (7 таблиц ТЗ) + тестовые данные
 img/placeholder.jpg            — заглушка афиши
 ```
