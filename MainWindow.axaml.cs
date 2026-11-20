@@ -1,9 +1,8 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using System;
 using MySql.Data.MySqlClient;
+using System;
 using Avalon.Core;
 
 namespace Avalon;
@@ -24,8 +23,7 @@ public partial class MainWindow : Window
 
         if (string.IsNullOrEmpty(login) || string.IsNullOrEmpty(password))
         {
-            TxtError.Text = "Пожалуйста, заполните все поля";
-            TxtError.IsVisible = true;
+            ShowError("Пожалуйста, заполните все поля");
             return;
         }
 
@@ -58,14 +56,15 @@ public partial class MainWindow : Window
                 }
             }
 
-            // 2. Покупатели (ticket_buyers.email + password).
+            // 2. Покупатели (ticket_buyers.email + password). Запоминаем id — по нему грузятся заказы.
             using (var cmd = new MySqlCommand(
-                "SELECT full_name, password FROM ticket_buyers WHERE email = @login", connection))
+                "SELECT id, full_name, password FROM ticket_buyers WHERE email = @login", connection))
             {
                 cmd.Parameters.AddWithValue("@login", login);
                 using var reader = cmd.ExecuteReader();
                 if (reader.Read())
                 {
+                    int buyerId = reader.GetInt32("id");
                     string fullName = reader.GetString("full_name");
                     string stored = reader.IsDBNull(reader.GetOrdinal("password"))
                         ? "" : reader.GetString("password");
@@ -73,21 +72,17 @@ public partial class MainWindow : Window
 
                     if (PasswordHasher.Verify(password, stored))
                     {
-                        OpenDashboardForBuyer(fullName);
+                        OpenDashboardForBuyerId(buyerId, fullName);
                         return;
                     }
                 }
             }
 
-            TxtError.Text = "Неверный логин или пароль";
-            TxtError.Foreground = Brushes.Red;
-            TxtError.IsVisible = true;
+            ShowError("Неверный логин или пароль");
         }
         catch (Exception ex)
         {
-            TxtError.Text = $"Ошибка БД: {ex.Message}";
-            TxtError.Foreground = Brushes.Red;
-            TxtError.IsVisible = true;
+            ShowError($"Ошибка БД: {ex.Message}");
         }
     }
 
@@ -96,27 +91,36 @@ public partial class MainWindow : Window
         Window dashboard;
 
         if (roleName.Contains("Продюсер"))
-        {
             dashboard = new ProducerDashboardWindow(fullName);
-        }
         else if (roleName.Contains("Менеджер"))
-        {
             dashboard = new ManagerDashboardWindow(fullName);
-        }
         else
-        {
-            dashboard = new DashboardWindow(fullName);
-        }
+            // Прочие роли — кабинет покупателя без заказов (id = 0).
+            dashboard = new DashboardWindow(0, fullName);
 
         dashboard.Show();
         this.Close();
     }
 
-    private void OpenDashboardForBuyer(string fullName)
+    private void OpenDashboardForBuyerId(int buyerId, string fullName)
     {
-        var dashboard = new DashboardWindow(fullName);
+        var dashboard = new DashboardWindow(buyerId, fullName);
         dashboard.Show();
         this.Close();
+    }
+
+    // Вход по Enter в поле пароля.
+    private void TxtPassword_KeyDown(object? sender, Avalonia.Input.KeyEventArgs e)
+    {
+        if (e.Key == Avalonia.Input.Key.Enter)
+            BtnLogin_Click(sender, e);
+    }
+
+    private void ShowError(string message)
+    {
+        TxtError.Text = message;
+        TxtError.Foreground = Brushes.Red;
+        TxtError.IsVisible = true;
     }
 
     private void BtnGoToRegister_Click(object? sender, RoutedEventArgs e)

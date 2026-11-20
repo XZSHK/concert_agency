@@ -36,6 +36,19 @@ public class OrderStateMachineTests
         Assert.Equal(OrderStatus.Refund, result);
     }
 
+    /// <summary>
+    /// Возврат НЕОПЛАЧЕННОЙ брони (< 24 ч до концерта) разрешён: это не финансовый
+    /// возврат, иначе истёкшая бронь навсегда занимала бы места.
+    /// </summary>
+    [Fact]
+    public void Test3_UnpaidBookingRefundAllowedEvenWithin24Hours()
+    {
+        var lessThan24hBefore = EventDate.AddHours(-12);
+        string result = OrderStateMachine.Transition(
+            OrderStatus.Booking, OrderStatus.Refund, EventDate, lessThan24hBefore);
+        Assert.Equal(OrderStatus.Refund, result);
+    }
+
     [Fact]
     public void Test3_CanTransitionReflectsFsm()
     {

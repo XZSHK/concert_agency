@@ -24,6 +24,7 @@ public partial class BookingWindow : Window
     private long? _orderId;
     private string _orderRef = "";
     private bool _isPaid;
+    private bool _isExpired;
 
     // Таймер удержания билета 15 минут (ТЗ: DispatcherTimer).
     private DispatcherTimer? _timer;
@@ -32,37 +33,35 @@ public partial class BookingWindow : Window
     public BookingWindow()
     {
         InitializeComponent();
+        this.Closed += (_, _) => OnWindowClosed();
     }
 
-    public BookingWindow(ConcertEvent selectedEvent, string userName) : this()
+    public BookingWindow(ConcertEvent selectedEvent, int buyerId, string userName) : this()
     {
         _currentEvent = selectedEvent;
+        _buyerId = buyerId;
         _userName = userName;
 
         this.DataContext = _currentEvent;
 
         TxtConcertName.Text = _currentEvent.ArtistName;
-        TxtConcertInfo.Text = $"{_currentEvent.EventDate:dd MMMM yyyy, HH:mm} | {_currentEvent.HallName}";
+        TxtConcertInfo.Text = $"{_currentEvent.EventDate:dd MMMM yyyy, HH:mm}  ·  {_currentEvent.HallName}";
 
-        LoadBuyerAndSubscription();
+        LoadBuyerSubscription();
         UpdatePrices();
     }
 
-    private void LoadBuyerAndSubscription()
+    private void LoadBuyerSubscription()
     {
         try
         {
             using var conn = DatabaseHelper.GetConnection();
             using var cmd = new MySqlCommand(
-                "SELECT id, has_promo_subscription FROM ticket_buyers WHERE full_name = @name LIMIT 1", conn);
-            cmd.Parameters.AddWithValue("@name", _userName);
-            using var reader = cmd.ExecuteReader();
-            if (reader.Read())
-            {
-                _buyerId = reader.GetInt32("id");
-                _hasPromoSubscription = !reader.IsDBNull(reader.GetOrdinal("has_promo_subscription"))
-                    && reader.GetBoolean("has_promo_subscription");
-            }
+                "SELECT has_promo_subscription FROM ticket_buyers WHERE id = @id", conn);
+            cmd.Parameters.AddWithValue("@id", _buyerId);
+            var result = cmd.ExecuteScalar();
+            if (result != null && result != DBNull.Value)
+                _hasPromoSubscription = Convert.ToBoolean(result);
         }
         catch (Exception ex) { ShowMessage($"Ошибка БД: {ex.Message}", false); }
     }
@@ -71,52 +70,72 @@ public partial class BookingWindow : Window
     {
         if (_currentEvent == null) return;
 
-        // Суммы считает OrderCalculator (формула ТЗ), окно только отображает.
+        TxtParterrePrice.Text = $"{_currentEvent.ParterrePrice:N0} ₽ / шт";
+        TxtVipPrice.Text = $"{OrderCalculator.FinalSeatCost("VIP", _currentEvent.VipPrice):N0} ₽ / шт (бейдж включён)";
+
         if (_parterreQty == 0 && _vipQty == 0)
         {
-            TxtParterrePrice.Text = $"{_currentEvent.ParterrePrice:C0} / шт";
-            TxtVipPrice.Text = $"{_currentEvent.VipPrice + OrderCalculator.VipBadgeSurcharge:C0} / шт";
-            TxtBasePrice.Text = "0 руб.";
-            TxtServiceFee.Text = "0 руб.";
-            TxtTotal.Text = "0 руб.";
+            TxtBasePrice.Text = "0 ₽";
+            TxtServiceFee.Text = "0 ₽";
+            TxtServiceFee.Foreground = Brushes.White;
+            TxtTotal.Text = "0 ₽";
             return;
         }
 
+        // Суммы считает OrderCalculator (формула ТЗ), окно только отображает.
         var totals = OrderCalculator.Calculate(
             _parterreQty, _vipQty,
             _currentEvent.ParterrePrice, _currentEvent.VipPrice,
             _hasPromoSubscription);
 
-        TxtParterrePrice.Text = $"{_currentEvent.ParterrePrice:C0} / шт";
-        TxtVipPrice.Text = $"{_currentEvent.VipPrice + OrderCalculator.VipBadgeSurcharge:C0} / шт";
-        TxtBasePrice.Text = $"{totals.Subtotal:C0}";
-        TxtServiceFee.Text = _hasPromoSubscription ? "0 руб. (Промокод)" : $"{totals.ServiceFee:C0}";
-        TxtServiceFee.Foreground = _hasPromoSubscription ? Brushes.Green : Brushes.White;
-        TxtTotal.Text = $"{totals.Total:C0}";
+        TxtBasePrice.Text = $"{totals.Subtotal:N0} ₽";
+        TxtServiceFee.Text = _hasPromoSubscription
+            ? "0 ₽ (промокод)"
+            : $"{totals.ServiceFee:N0} ₽";
+        TxtServiceFee.Foreground = _hasPromoSubscription ? Brushes.LightGreen : Brushes.White;
+        TxtTotal.Text = $"{totals.Total:N0} ₽";
     }
 
-    private void BtnPlusParterre_Click(object? sender, RoutedEventArgs e) { _parterreQty++; TxtParterreQty.Text = _parterreQty.ToString(); UpdatePrices(); }
-    private void BtnMinusParterre_Click(object? sender, RoutedEventArgs e) { if (_parterreQty > 0) _parterreQty--; TxtParterreQty.Text = _parterreQty.ToString(); UpdatePrices(); }
-    private void BtnPlusVip_Click(object? sender, RoutedEventArgs e) { _vipQty++; TxtVipQty.Text = _vipQty.ToString(); UpdatePrices(); }
-    private void BtnMinusVip_Click(object? sender, RoutedEventArgs e) { if (_vipQty > 0) _vipQty--; TxtVipQty.Text = _vipQty.ToString(); UpdatePrices(); }
+    private void BtnPlusParterre_Click(object? sender, RoutedEventArgs e) { _parterreQty++; RefreshQty(); }
+    private void BtnMinusParterre_Click(object? sender, RoutedEventArgs e) { if (_parterreQty > 0) _parterreQty--; RefreshQty(); }
+    private void BtnPlusVip_Click(object? sender, RoutedEventArgs e) { _vipQty++; RefreshQty(); }
+    private void BtnMinusVip_Click(object? sender, RoutedEventArgs e) { if (_vipQty > 0) _vipQty--; RefreshQty(); }
+
+    private void RefreshQty()
+    {
+        TxtParterreQty.Text = _parterreQty.ToString();
+        TxtVipQty.Text = _vipQty.ToString();
+        UpdatePrices();
+    }
 
     private void BtnCancel_Click(object? sender, RoutedEventArgs e)
     {
+        ExpireUnpaidBooking();
+        this.Close();
+    }
+
+    private void OnWindowClosed()
+    {
+        // Крестик в заголовке = отказ от неоплаченной брони: места освобождаются.
         StopTimer();
-        // Неоплаченная бронь при закрытии окна — отменяется (места освобождаются).
+        ExpireUnpaidBooking();
+    }
+
+    private void ExpireUnpaidBooking()
+    {
         if (_orderId.HasValue && !_isPaid)
         {
-            try { OrderService.ExpireBooking(_orderId.Value); } catch { /* заказ уже закрыт */ }
+            try { OrderService.ExpireBooking(_orderId.Value); }
+            catch { /* заказ уже закрыт */ }
         }
-        this.Close();
     }
 
     private void BtnConfirm_Click(object? sender, RoutedEventArgs e)
     {
         if (_currentEvent == null) return;
         if (_parterreQty == 0 && _vipQty == 0) { ShowMessage("Выберите хотя бы один билет!", false); return; }
-        if (_buyerId == 0) { ShowMessage("Покупатель не найден. Войдите заново.", false); return; }
-        if (_orderId.HasValue) { ShowMessage("Заказ уже оформлен. Завершите оплату.", false); return; }
+        if (_buyerId == 0) { ShowMessage("Покупатель не определён. Войдите заново.", false); return; }
+        if (_orderId.HasValue) { ShowMessage("Заказ уже оформлен. У вас есть 15 минут на оплату.", false); return; }
 
         try
         {
@@ -127,27 +146,29 @@ public partial class BookingWindow : Window
                 _hasPromoSubscription,
                 _currentEvent.ParterreCapacity, _currentEvent.VipCapacity);
 
+            _isExpired = false;
             _orderRef = LoadOrderReference(_orderId.Value);
             TxtBookingStatus.Text = $"{OrderStatus.Booking} · {_orderRef}";
+            TxtBookingStatus.Foreground = Brushes.White;
             BtnConfirm.IsEnabled = false;
             BtnPay.IsEnabled = true;
             ShowMessage($"Заказ {_orderRef} оформлен. У вас 15 минут на оплату.", true);
 
             StartTimer();
         }
-        catch (InvalidOperationException ex)
-        {
-            ShowMessage(ex.Message, false);
-        }
-        catch (Exception ex)
-        {
-            ShowMessage($"Ошибка БД: {ex.Message}", false);
-        }
+        catch (InvalidOperationException ex) { ShowMessage(ex.Message, false); }
+        catch (Exception ex) { ShowMessage($"Ошибка БД: {ex.Message}", false); }
     }
 
     private void BtnPay_Click(object? sender, RoutedEventArgs e)
     {
         if (!_orderId.HasValue) return;
+
+        if (_isExpired)
+        {
+            ShowMessage("Время брони истекло. Оформите заказ заново.", false);
+            return;
+        }
 
         try
         {
@@ -156,15 +177,14 @@ public partial class BookingWindow : Window
             _isPaid = true;
             StopTimer();
             TxtTimer.Text = "Оплачено";
+            TxtTimer.Foreground = Brushes.LightGreen;
             TxtBookingStatus.Text = OrderStatus.Issued;
+            TxtBookingStatus.Foreground = Brushes.LightGreen;
             BtnPay.IsEnabled = false;
             BtnExportTicket.IsEnabled = true;
             ShowMessage("Оплата прошла. Билет выписан — можно скачать с QR-кодом.", true);
         }
-        catch (Exception ex)
-        {
-            ShowMessage(ex.Message, false);
-        }
+        catch (Exception ex) { ShowMessage(ex.Message, false); }
     }
 
     private void BtnExportTicket_Click(object? sender, RoutedEventArgs e)
@@ -178,12 +198,9 @@ public partial class BookingWindow : Window
                 Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
                 "ArtPrestigeTickets");
             var (txtPath, pngPath, signature) = TicketExportService.Export(ticket, folder);
-            ShowMessage($"Билет сохранён:\n{txtPath}\nQR: {pngPath}\nПодпись SHA256: {signature}", true);
+            ShowMessage($"Билет сохранён:\n{txtPath}\nQR: {pngPath}\nSHA256: {signature}", true);
         }
-        catch (Exception ex)
-        {
-            ShowMessage($"Ошибка экспорта: {ex.Message}", false);
-        }
+        catch (Exception ex) { ShowMessage($"Ошибка экспорта: {ex.Message}", false); }
     }
 
     // ---------- Таймер 15 минут ----------
@@ -191,6 +208,7 @@ public partial class BookingWindow : Window
     private void StartTimer()
     {
         _timeLeft = TimeSpan.FromMinutes(15);
+        TxtTimer.Foreground = Brushes.Gold;
         TxtTimer.Text = FormatTimeLeft(_timeLeft);
         _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += Timer_Tick;
@@ -208,12 +226,16 @@ public partial class BookingWindow : Window
             OnTimerExpired();
             return;
         }
+
+        // Последняя минута — красным, чтобы не пропустить.
+        TxtTimer.Foreground = _timeLeft <= TimeSpan.FromMinutes(1) ? Brushes.OrangeRed : Brushes.Gold;
         TxtTimer.Text = FormatTimeLeft(_timeLeft);
     }
 
     private void OnTimerExpired()
     {
         if (_isPaid) return;
+        _isExpired = true;
 
         if (_orderId.HasValue)
         {
@@ -221,6 +243,7 @@ public partial class BookingWindow : Window
         }
 
         TxtBookingStatus.Text = "Бронь истекла";
+        TxtBookingStatus.Foreground = Brushes.Red;
         BtnPay.IsEnabled = false;
         ShowMessage("Время брони (15 мин) истекло. Заказ отменён, места освобождены.", false);
     }
@@ -237,7 +260,7 @@ public partial class BookingWindow : Window
 
     private static string FormatTimeLeft(TimeSpan t) => $"{(int)t.TotalMinutes:00}:{t.Seconds:00}";
 
-    // ---------- Загрузка данных заказа для экспорта ----------
+    // ---------- Загрузка данных заказа ----------
 
     private string LoadOrderReference(long orderId)
     {
@@ -295,7 +318,7 @@ public partial class BookingWindow : Window
     private void ShowMessage(string message, bool isSuccess)
     {
         TxtBookingMessage.Text = message;
-        TxtBookingMessage.Foreground = isSuccess ? Brushes.Green : Brushes.Red;
+        TxtBookingMessage.Foreground = isSuccess ? Brushes.LightGreen : Brushes.Red;
         TxtBookingMessage.IsVisible = true;
     }
 }
