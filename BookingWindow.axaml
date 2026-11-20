@@ -1,0 +1,88 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalon"
+        x:Class="Avalon.BookingWindow"
+        x:DataType="local:ConcertEvent"
+        Title="Бронирование билетов"
+        WindowStartupLocation="CenterScreen"
+        Width="900" Height="750" 
+        CanResize="True"
+        Background="#121212">
+    
+    <Grid RowDefinitions="Auto, *" Margin="20">
+        <!-- Заголовок с картинкой -->
+        <Border Grid.Row="0" Background="#1E1E2F" CornerRadius="15,15,0,0" ClipToBounds="True" MinHeight="200">
+            <Grid RowDefinitions="150, Auto">
+                <Image Grid.Row="0" Source="{Binding ImageSource}" Stretch="UniformToFill" />
+                <Border Grid.Row="1" Background="#DD121212" Padding="30">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtConcertName" FontSize="28" FontWeight="Bold" Foreground="#FFD700"/>
+                        <TextBlock x:Name="TxtConcertInfo" FontSize="16" Foreground="#8A8A9E" Margin="0,5,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Контент с прокруткой -->
+        <Border Grid.Row="1" Background="#1E1E2F" CornerRadius="0,0,15,15" Padding="40" BoxShadow="0 15 30 0 #80000000">
+            <ScrollViewer>
+                <StackPanel Spacing="25">
+                    <!-- Партер -->
+                    <Border Background="#2A2A4A" CornerRadius="10" Padding="20">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Партер" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtParterrePrice" Grid.Column="1" Text="0 руб." FontSize="16" FontWeight="Bold" Foreground="#00FF88" VerticalAlignment="Center"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,15,0,0">
+                                <Button Content="-" Width="45" Height="45" Background="#333355" Foreground="White" CornerRadius="8" Click="BtnMinusParterre_Click" FontSize="18"/>
+                                <TextBox x:Name="TxtParterreQty" Text="0" Width="70" Height="45" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Background="#121212" Foreground="White" BorderThickness="0" FontSize="18"/>
+                                <Button Content="+" Width="45" Height="45" Background="#333355" Foreground="White" CornerRadius="8" Click="BtnPlusParterre_Click" FontSize="18"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- VIP -->
+                    <Border Background="#2A2A4A" CornerRadius="10" Padding="20">
+                        <StackPanel>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="VIP (включен бейдж +500 руб.)" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtVipPrice" Grid.Column="1" Text="0 руб." FontSize="16" FontWeight="Bold" Foreground="#FFD700" VerticalAlignment="Center"/>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,15,0,0">
+                                <Button Content="-" Width="45" Height="45" Background="#333355" Foreground="White" CornerRadius="8" Click="BtnMinusVip_Click" FontSize="18"/>
+                                <TextBox x:Name="TxtVipQty" Text="0" Width="70" Height="45" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" IsReadOnly="True" Background="#121212" Foreground="White" BorderThickness="0" FontSize="18"/>
+                                <Button Content="+" Width="45" Height="45" Background="#333355" Foreground="White" CornerRadius="8" Click="BtnPlusVip_Click" FontSize="18"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Итоги -->
+                    <Border Background="#121212" CornerRadius="10" Padding="25" BorderBrush="#333355" BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Стоимость билетов:" Foreground="#8A8A9E" FontSize="15"/>
+                                <TextBlock x:Name="TxtBasePrice" Grid.Column="1" Text="0 руб." FontWeight="SemiBold" Foreground="White" FontSize="15"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Сервисный сбор:" Foreground="#8A8A9E" FontSize="15"/>
+                                <TextBlock x:Name="TxtServiceFee" Grid.Column="1" Text="0 руб." FontWeight="SemiBold" Foreground="White" FontSize="15"/>
+                            </Grid>
+                            <Separator Background="#333355" Margin="0,5"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="ИТОГО:" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtTotal" Grid.Column="1" Text="0 руб." FontSize="22" FontWeight="Bold" Foreground="#FFD700"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Кнопки (теперь под сборами) -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="20" Margin="0,15,0,0">
+                        <Button Content="Отмена" Background="#333355" Foreground="White" Padding="25,12" CornerRadius="8" Click="BtnCancel_Click" FontSize="15"/>
+                        <Button Content="Оформить заказ" Background="#FFD700" Foreground="#121212" FontWeight="Bold" Padding="25,12" CornerRadius="8" Click="BtnConfirm_Click" FontSize="15"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

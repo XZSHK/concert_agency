@@ -1,0 +1,91 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalon"
+        x:Class="Avalon.ProducerDashboardWindow"
+        x:DataType="local:ProducerDashboardWindow"
+        Title="Панель Продюсера"
+        WindowStartupLocation="CenterScreen" Width="1200" Height="800" WindowState="Maximized"
+        Background="#121212">
+    
+    <Grid ColumnDefinitions="260, *">
+        <Border Background="#1E1E2F" Padding="20">
+            <StackPanel Spacing="30">
+                <TextBlock Text="АПР-ПРЕСТИЖ" FontSize="22" FontWeight="Black" Foreground="#FFD700" LetterSpacing="1"/>
+                <StackPanel Spacing="8">
+                    <Button Content="🏟 Площадки" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowHalls_Click" FontSize="15"/>
+                    <Button Content="🎤 Создать концерт" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowCreateEvent_Click" FontSize="15"/>
+                    <Button Content="💰 Гонорары" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowFees_Click" FontSize="15"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Column="1" RowDefinitions="Auto, *">
+            <Border Background="#1E1E2F" Padding="30,15" BoxShadow="0 4 10 0 #50000000">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock Text="Управление гастролями" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="15">
+                        <TextBlock x:Name="TxtUserName" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                        <Button Content="Выйти" Background="Transparent" Foreground="#FF5555" BorderBrush="#FF5555" BorderThickness="1" Padding="15,8" CornerRadius="5" Click="BtnLogout_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="PanelHalls" Grid.Row="1" Margin="30" RowDefinitions="Auto, *">
+                <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,15">
+                    <TextBlock Text="Доступные концертные залы" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <Button Content="Обновить" Background="#FFD700" Foreground="#121212" Padding="10,5" CornerRadius="5" Click="BtnRefreshHalls_Click"/>
+                </StackPanel>
+                
+                <DataGrid ItemsSource="{Binding Halls}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Background="#1E1E2F" RowBackground="#1E1E2F" Foreground="#E0E0E0" BorderBrush="#333355">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                        <DataGridTextColumn Header="Название зала" Binding="{Binding HallName}" Width="*"/>
+                        <DataGridTextColumn Header="Город" Binding="{Binding City}" Width="150"/>
+                        <DataGridTextColumn Header="Партер" Binding="{Binding ParterreCapacity}" Width="100"/>
+                        <DataGridTextColumn Header="VIP" Binding="{Binding VipCapacity}" Width="100"/>
+                        <DataGridTextColumn Header="Аренда (руб/день)" Binding="{Binding RentPerDay, StringFormat='{}{0:N0}'}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
+            <Border x:Name="PanelCreateEvent" Grid.Row="1" Margin="30" Background="#1E1E2F" CornerRadius="15" Padding="30" IsVisible="False" BoxShadow="0 10 30 0 #60000000" BorderBrush="#333355" BorderThickness="1">
+                <StackPanel Spacing="15" MaxWidth="600" HorizontalAlignment="Left">
+                    <TextBlock Text="Создать концерт" FontSize="20" FontWeight="Bold" Foreground="#FFD700"/>
+                    <TextBox x:Name="TxtArtistName" PlaceholderText="Название группы" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                    <ComboBox x:Name="CmbHalls" ItemsSource="{Binding Halls}" HorizontalAlignment="Stretch" PlaceholderText="Выберите зал" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="local:HallData">
+                                <TextBlock Text="{Binding HallName}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <TextBox x:Name="TxtEventDate" PlaceholderText="ГГГГ-ММ-ДД ЧЧ:ММ" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                    <Grid ColumnDefinitions="*, *">
+                        <TextBox x:Name="TxtParterrePrice" PlaceholderText="Партер (руб)" Margin="0,0,5,0" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                        <TextBox x:Name="TxtVipPrice" PlaceholderText="VIP (руб)" Grid.Column="1" Margin="5,0,0,0" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                    </Grid>
+                    <TextBox x:Name="TxtAgeRestriction" PlaceholderText="Возраст (12+)" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                    <TextBox x:Name="TxtImagePath" PlaceholderText="Имя файла в папке img (например, kino.jpg)" Height="40" CornerRadius="8" Background="#2A2A4A" Foreground="White" BorderBrush="#333355"/>
+                    <Button Content="Создать" Background="#FFD700" Foreground="#121212" Height="45" CornerRadius="8" FontWeight="Bold" Click="BtnCreateEvent_Click"/>
+                    <TextBlock x:Name="TxtMessage" Foreground="#FF5555" IsVisible="False"/>
+                </StackPanel>
+            </Border>
+
+            <Grid x:Name="PanelFees" Grid.Row="1" Margin="30" RowDefinitions="Auto, *" IsVisible="False">
+                <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,15">
+                    <TextBlock Text="Расчет гонораров исполнителей" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <Button Content="Обновить" Background="#FFD700" Foreground="#121212" Padding="10,5" CornerRadius="5" Click="BtnRefreshFees_Click"/>
+                </StackPanel>
+                <DataGrid ItemsSource="{Binding Fees}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Background="#1E1E2F" RowBackground="#1E1E2F" Foreground="#E0E0E0" BorderBrush="#333355">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Исполнитель" Binding="{Binding ArtistName}" Width="*"/>
+                        <DataGridTextColumn Header="Зал" Binding="{Binding HallName}" Width="200"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding EventDate, StringFormat='{}{0:dd.MM.yyyy}'}" Width="120"/>
+                        <DataGridTextColumn Header="Потенциал сбора" Binding="{Binding TotalPotential, StringFormat='{}{0:C0}'}" Width="150"/>
+                        <DataGridTextColumn Header="Гонорар (30%)" Binding="{Binding Fee, StringFormat='{}{0:C0}'}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,151 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalon"
+        x:Class="Avalon.DashboardWindow"
+        x:DataType="local:DashboardWindow"
+        Title="Афиша - Апр-Престиж"
+        WindowStartupLocation="CenterScreen" Width="1100" Height="800"
+        WindowState="Maximized"
+        Background="#121212">
+    
+    <Grid ColumnDefinitions="260, *">
+        <!-- Боковое меню -->
+        <Border Grid.Column="0" Background="#1E1E2F" Padding="20">
+            <StackPanel Spacing="30">
+                <StackPanel Spacing="5">
+                    <TextBlock Text="АПР-ПРЕСТИЖ" FontSize="24" FontWeight="Black" Foreground="#FFD700" LetterSpacing="2"/>
+                    <TextBlock Text="Concert &amp; Touring Agency" FontSize="11" Foreground="#8A8A9E"/>
+                </StackPanel>
+                
+                <StackPanel Spacing="8">
+                    <Button Content="🎵 Афиша" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowEvents_Click" FontSize="15"/>
+                    <Button Content="🎟 Мои билеты" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowMyTickets_Click" FontSize="15"/>
+                    <Button Content="👤 Профиль" Background="Transparent" Foreground="#E0E0E0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="15,12" CornerRadius="8" Click="ShowProfile_Click" FontSize="15"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Основной контент -->
+        <Grid Grid.Column="1" RowDefinitions="Auto, *">
+            <!-- Верхняя панель -->
+            <Border Grid.Row="0" Background="#1E1E2F" Padding="30,15" BoxShadow="0 4 10 0 #50000000">
+                <Grid ColumnDefinitions="*, Auto">
+                    <TextBlock x:Name="TxtHeader" Text="Ближайшие концерты" FontSize="26" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="15" VerticalAlignment="Center">
+                        <TextBlock x:Name="TxtUserName" Text="Пользователь" Foreground="#AAAAAA" FontSize="14" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnLogout" Content="Выйти" Background="Transparent" 
+                                Foreground="#FF5555" BorderBrush="#FF5555" BorderThickness="1" CornerRadius="5" 
+                                Padding="15,8" FontSize="14" Click="BtnLogout_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ПАНЕЛЬ 1: Афиша -->
+            <ScrollViewer x:Name="PanelEvents" Grid.Row="1" Padding="30">
+                <ItemsControl ItemsSource="{Binding Events}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:ConcertEvent">
+                            <!-- Карточка на всю ширину -->
+                            <Border Background="#1E1E2F" CornerRadius="15" Margin="0,0,0,25" BoxShadow="0 8 20 0 #80000000" ClipToBounds="True" BorderBrush="#333355" BorderThickness="1" HorizontalAlignment="Stretch">
+                                <Grid ColumnDefinitions="250, *">
+                                    <!-- Картинка слева -->
+                                    <Border Grid.Column="0" Background="#2A2A4A" CornerRadius="15,0,0,15" ClipToBounds="True">
+                                        <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+                                    </Border>
+                                    
+                                    <!-- Информация справа -->
+                                    <StackPanel Grid.Column="1" Margin="30,20" Spacing="12">
+                                        <!-- Заголовок и возраст -->
+                                        <Grid ColumnDefinitions="*, Auto">
+                                            <TextBlock Text="{Binding ArtistName}" FontSize="26" FontWeight="Bold" Foreground="White" TextWrapping="Wrap"/>
+                                            <Border Grid.Column="1" Background="#FF5555" CornerRadius="6" Padding="10,5" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding AgeRestriction}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+                                            </Border>
+                                        </Grid>
+                                        
+                                        <!-- Дата и зал -->
+                                        <StackPanel Orientation="Horizontal" Spacing="20">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="📅" FontSize="16" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding EventDate, StringFormat='{}{0:dd MMMM yyyy, HH:mm}'}" FontSize="16" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="🏟" FontSize="16" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding HallName}" FontSize="16" Foreground="#AAAAAA" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        
+                                        <Separator Background="#333355" Margin="0,5"/>
+                                        
+                                        <!-- Цены и кнопка -->
+                                        <Grid ColumnDefinitions="*, *, Auto">
+                                            <!-- Партер -->
+                                            <StackPanel Spacing="5">
+                                                <TextBlock Text="Партер" FontSize="14" Foreground="#8A8A9E"/>
+                                                <TextBlock Text="{Binding ParterrePrice, StringFormat='{}{0:C0}'}" FontSize="22" FontWeight="Bold" Foreground="#00FF88"/>
+                                            </StackPanel>
+                                            
+                                            <!-- VIP -->
+                                            <StackPanel Grid.Column="1" Spacing="5">
+                                                <TextBlock Text="VIP (с бейджем)" FontSize="14" Foreground="#8A8A9E"/>
+                                                <TextBlock Text="{Binding VipPrice, StringFormat='{}{0:C0}'}" FontSize="22" FontWeight="Bold" Foreground="#FFD700"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Кнопка -->
+                                            <Button Grid.Column="2" Content="🎟 КУПИТЬ БИЛЕТ" Background="#FFD700" Foreground="#121212" 
+                                                    FontSize="16" FontWeight="Bold" Padding="30,15" CornerRadius="10" 
+                                                    VerticalAlignment="Center" Click="BtnBuyTicket_Click" Tag="{Binding}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- ПАНЕЛЬ 2: Мои билеты -->
+            <Grid x:Name="PanelMyTickets" Grid.Row="1" Margin="30" RowDefinitions="Auto, *" IsVisible="False">
+                <TextBlock Text="Ваши заказы" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
+                <DataGrid ItemsSource="{Binding MyOrders}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Background="#1E1E2F" RowBackground="#1E1E2F" Foreground="#E0E0E0" BorderBrush="#333355">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Номер заказа" Binding="{Binding OrderRef}" Width="150"/>
+                        <DataGridTextColumn Header="Концерт" Binding="{Binding ArtistName}" Width="*"/>
+                        <DataGridTextColumn Header="Дата" Binding="{Binding EventDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" Width="150"/>
+                        <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C0}'}" Width="120"/>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
+<Border x:Name="PanelProfile" Grid.Row="1" Margin="30" Background="#1E1E2F" CornerRadius="15" Padding="40" IsVisible="False" VerticalAlignment="Top" BoxShadow="0 10 30 0 #60000000">
+    <StackPanel Spacing="20" MaxWidth="500" HorizontalAlignment="Left">
+        <TextBlock Text="Ваш профиль" FontSize="24" FontWeight="Bold" Foreground="#FFD700"/>
+        
+        <StackPanel Spacing="5">
+            <TextBlock Text="ФИО" Foreground="#8A8A9E" FontSize="12"/>
+            <TextBox x:Name="TxtProfileName" FontSize="16" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" Height="40" CornerRadius="8"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+            <TextBlock Text="Email" Foreground="#8A8A9E" FontSize="12"/>
+            <TextBox x:Name="TxtProfileEmail" FontSize="16" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" Height="40" CornerRadius="8"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+            <TextBlock Text="Телефон" Foreground="#8A8A9E" FontSize="12"/>
+            <TextBox x:Name="TxtProfilePhone" FontSize="16" Background="#2A2A4A" Foreground="White" BorderBrush="#333355" Height="40" CornerRadius="8"/>
+        </StackPanel>
+        
+        <StackPanel Spacing="5">
+            <TextBlock Text="Подписка на промокоды" Foreground="#8A8A9E" FontSize="12"/>
+            <TextBlock x:Name="TxtProfilePromo" FontSize="16" FontWeight="Bold" Foreground="#00FF88"/>
+        </StackPanel>
+
+        <Button Content="Сохранить изменения" Background="#FFD700" Foreground="#121212" FontWeight="Bold" Height="45" CornerRadius="8" Click="BtnSaveProfile_Click" Margin="0,15,0,0"/>
+        <TextBlock x:Name="TxtProfileMessage" Foreground="#00FF88" IsVisible="False" FontWeight="SemiBold"/>
+    </StackPanel>
+</Border>
+        </Grid>
+    </Grid>
+</Window>
