@@ -4,6 +4,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Avalon.Core;
 
 namespace Avalon;
 
@@ -97,8 +98,9 @@ public partial class ProducerDashboardWindow : Window
                         int parterreCap = reader.GetInt32("parterre_capacity");
                         int vipCap = reader.GetInt32("vip_capacity");
 
-                        decimal potential = (parterrePrice * parterreCap) + (vipPrice * vipCap);
-                        decimal fee = potential * 0.30m; 
+                        // Потенциал сбора и гонорар (30%) — через OrderCalculator (единая формула).
+                        decimal potential = OrderCalculator.PotentialRevenue(parterrePrice, parterreCap, vipPrice, vipCap);
+                        decimal fee = OrderCalculator.CalculateProducerFee(potential);
 
                         tempList.Add(new FeeData {
                             ArtistName = reader.GetString("artist_group_name"),

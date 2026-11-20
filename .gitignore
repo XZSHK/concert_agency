@@ -1,0 +1,19 @@
+# Сборка .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+*.trx
+coverage*.xml
+coverage*.json
+
+# ОС и редакторы
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Экспортированные билеты (генерируются приложением)
+ArtPrestigeTickets/

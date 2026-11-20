@@ -5,10 +5,10 @@
         x:DataType="local:ConcertEvent"
         Title="Бронирование билетов"
         WindowStartupLocation="CenterScreen"
-        Width="900" Height="750" 
+        Width="900" Height="820"
         CanResize="True"
         Background="#121212">
-    
+
     <Grid RowDefinitions="Auto, *" Margin="20">
         <!-- Заголовок с картинкой -->
         <Border Grid.Row="0" Background="#1E1E2F" CornerRadius="15,15,0,0" ClipToBounds="True" MinHeight="200">
@@ -76,10 +76,27 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Кнопки (теперь под сборами) -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="20" Margin="0,15,0,0">
-                        <Button Content="Отмена" Background="#333355" Foreground="White" Padding="25,12" CornerRadius="8" Click="BtnCancel_Click" FontSize="15"/>
-                        <Button Content="Оформить заказ" Background="#FFD700" Foreground="#121212" FontWeight="Bold" Padding="25,12" CornerRadius="8" Click="BtnConfirm_Click" FontSize="15"/>
+                    <!-- Таймер брони и статус заказа (ТЗ: DispatcherTimer 15 мин) -->
+                    <Border Background="#121212" CornerRadius="10" Padding="25" BorderBrush="#333355" BorderThickness="1">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Статус заказа:" Foreground="#8A8A9E" FontSize="15"/>
+                                <TextBlock x:Name="TxtBookingStatus" Grid.Column="1" Text="Не оформлен" FontWeight="SemiBold" Foreground="White" FontSize="15"/>
+                            </Grid>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="Таймер брони (15 мин):" Foreground="#8A8A9E" FontSize="15"/>
+                                <TextBlock x:Name="TxtTimer" Grid.Column="1" Text="--:--" FontWeight="Bold" Foreground="#FFD700" FontSize="18"/>
+                            </Grid>
+                            <TextBlock x:Name="TxtBookingMessage" Text="" Foreground="#00FF88" FontWeight="SemiBold" TextWrapping="Wrap" IsVisible="False"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Кнопки -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="15" Margin="0,15,0,0">
+                        <Button Content="Отмена" Background="#333355" Foreground="White" Padding="20,12" CornerRadius="8" Click="BtnCancel_Click" FontSize="15"/>
+                        <Button x:Name="BtnConfirm" Content="Оформить заказ" Background="#FFD700" Foreground="#121212" FontWeight="Bold" Padding="20,12" CornerRadius="8" Click="BtnConfirm_Click" FontSize="15"/>
+                        <Button x:Name="BtnPay" Content="Оплатить" Background="#00FF88" Foreground="#121212" FontWeight="Bold" Padding="20,12" CornerRadius="8" Click="BtnPay_Click" FontSize="15" IsEnabled="False"/>
+                        <Button x:Name="BtnExportTicket" Content="Скачать билет (QR)" Background="#333355" Foreground="White" Padding="20,12" CornerRadius="8" Click="BtnExportTicket_Click" FontSize="15" IsEnabled="False"/>
                     </StackPanel>
                 </StackPanel>
             </ScrollViewer>

@@ -105,7 +105,7 @@
             </ScrollViewer>
 
             <!-- ПАНЕЛЬ 2: Мои билеты -->
-            <Grid x:Name="PanelMyTickets" Grid.Row="1" Margin="30" RowDefinitions="Auto, *" IsVisible="False">
+            <Grid x:Name="PanelMyTickets" Grid.Row="1" Margin="30" RowDefinitions="Auto, *, Auto" IsVisible="False">
                 <TextBlock Text="Ваши заказы" FontSize="22" FontWeight="Bold" Foreground="White" Margin="0,0,0,20"/>
                 <DataGrid ItemsSource="{Binding MyOrders}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Background="#1E1E2F" RowBackground="#1E1E2F" Foreground="#E0E0E0" BorderBrush="#333355">
                     <DataGrid.Columns>
@@ -114,8 +114,20 @@
                         <DataGridTextColumn Header="Дата" Binding="{Binding EventDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" Width="150"/>
                         <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C0}'}" Width="120"/>
                         <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="150"/>
+                        <DataGridTemplateColumn Header="Действия" Width="320">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="local:MyOrder">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button Content="Оплатить" Background="#00FF88" Foreground="#121212" FontSize="12" Click="BtnPayOrder_Click" Tag="{Binding}" CornerRadius="4"/>
+                                        <Button Content="Скачать билет" Background="#333355" Foreground="White" FontSize="12" Click="BtnExportOrder_Click" Tag="{Binding}" CornerRadius="4"/>
+                                        <Button Content="Отменить" Background="#FF5555" Foreground="White" FontSize="12" Click="BtnCancelOrder_Click" Tag="{Binding}" CornerRadius="4"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock x:Name="TxtOrdersMessage" Grid.Row="2" Text="" Foreground="#00FF88" FontWeight="SemiBold" TextWrapping="Wrap" IsVisible="False" Margin="0,10,0,0"/>
             </Grid>
 
 <Border x:Name="PanelProfile" Grid.Row="1" Margin="30" Background="#1E1E2F" CornerRadius="15" Padding="40" IsVisible="False" VerticalAlignment="Top" BoxShadow="0 10 30 0 #60000000">

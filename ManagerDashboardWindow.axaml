@@ -6,7 +6,7 @@
         Title="Панель Менеджера"
         WindowStartupLocation="CenterScreen" Width="1200" Height="800" WindowState="Maximized"
         Background="#121212">
-    
+
     <Grid ColumnDefinitions="260, *">
         <Border Background="#1E1E2F" Padding="20">
             <StackPanel Spacing="30">
@@ -28,30 +28,35 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="1" Margin="30" RowDefinitions="Auto, *">
+            <Grid Grid.Row="1" Margin="30" RowDefinitions="Auto, *, Auto">
                 <StackPanel Orientation="Horizontal" Spacing="15" Margin="0,0,0,15">
                     <TextBlock Text="Все заказы" FontSize="20" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                     <Button Content="Обновить" Background="#FFD700" Foreground="#121212" Padding="10,5" CornerRadius="5" Click="BtnRefresh_Click"/>
                 </StackPanel>
-                
-                <DataGrid ItemsSource="{Binding Orders}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" 
+
+                <DataGrid ItemsSource="{Binding Orders}" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
                           Background="#1E1E2F" RowBackground="#1E1E2F" Foreground="#E0E0E0" BorderBrush="#333355">
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="Заказ" Binding="{Binding OrderRef}" Width="120"/>
+                        <DataGridTextColumn Header="Заказ" Binding="{Binding OrderRef}" Width="150"/>
                         <DataGridTextColumn Header="Покупатель" Binding="{Binding BuyerName}" Width="*"/>
                         <DataGridTextColumn Header="Концерт" Binding="{Binding ArtistName}" Width="*"/>
                         <DataGridTextColumn Header="Сумма" Binding="{Binding TotalAmount, StringFormat='{}{0:C0}'}" Width="120"/>
                         <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="150"/>
-                        <DataGridTemplateColumn Header="Действие" Width="150">
+                        <DataGridTemplateColumn Header="Действия (FSM)" Width="420">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="local:OrderData">
-                                    <Button Content="Возврат" Background="#FF5555" Foreground="White" FontSize="12"
-                                            Click="BtnRefund_Click" Tag="{Binding}" CornerRadius="4"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <Button Content="Оплачен" Background="#00FF88" Foreground="#121212" FontSize="12" Click="BtnPay_Click" Tag="{Binding}" CornerRadius="4"/>
+                                        <Button Content="Выписать" Background="#FFD700" Foreground="#121212" FontSize="12" Click="BtnIssue_Click" Tag="{Binding}" CornerRadius="4"/>
+                                        <Button Content="Контроль" Background="#333355" Foreground="White" FontSize="12" Click="BtnEntryControl_Click" Tag="{Binding}" CornerRadius="4"/>
+                                        <Button Content="Возврат" Background="#FF5555" Foreground="White" FontSize="12" Click="BtnRefund_Click" Tag="{Binding}" CornerRadius="4"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+                <TextBlock x:Name="TxtMessage" Grid.Row="2" Text="" Foreground="#00FF88" FontWeight="SemiBold" TextWrapping="Wrap" IsVisible="False" Margin="0,10,0,0"/>
             </Grid>
         </Grid>
     </Grid>

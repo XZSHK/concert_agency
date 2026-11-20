@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using MySql.Data.MySqlClient;
+using Avalon.Core;
 
 namespace Avalon;
 
@@ -127,7 +128,8 @@ public partial class RegisterWindow : Window
                     cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@phone", phone);
                     cmd.Parameters.AddWithValue("@hasPromo", hasPromo);
-                    cmd.Parameters.AddWithValue("@password", password);
+                    // Храним SHA256-хэш (совместимо с входом через PasswordHasher.Verify).
+                    cmd.Parameters.AddWithValue("@password", PasswordHasher.Hash(password));
                     
                     cmd.ExecuteNonQuery();
                 }
