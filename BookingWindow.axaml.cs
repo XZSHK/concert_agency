@@ -113,6 +113,9 @@ public partial class BookingWindow : Window
 
     private double _heroZoom = 1.0;
 
+    // ScaleTransform задан в XAML как RenderTransform изображения — берём его через каст.
+    private ScaleTransform? HeroZoomTransform => HeroImage.RenderTransform as ScaleTransform;
+
     private void HeroImage_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
     {
         ApplyHeroZoom(_heroZoom + (e.Delta.Y >= 0 ? 0.15 : -0.15));
@@ -126,8 +129,11 @@ public partial class BookingWindow : Window
     private void ApplyHeroZoom(double value)
     {
         _heroZoom = Math.Clamp(value, 0.4, 2.5);
-        HeroZoom.ScaleX = _heroZoom;
-        HeroZoom.ScaleY = _heroZoom;
+        if (HeroZoomTransform is { } zoom)
+        {
+            zoom.ScaleX = _heroZoom;
+            zoom.ScaleY = _heroZoom;
+        }
         TxtHeroZoom.Content = $"{Math.Round(_heroZoom * 100)}%";
     }
 
