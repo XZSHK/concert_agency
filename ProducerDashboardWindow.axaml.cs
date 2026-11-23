@@ -320,10 +320,16 @@ public partial class ProducerDashboardWindow : Window
 
     // ---------- Масштаб и кадр предпросмотра афиши ----------
 
+    // ScaleTransform задан в XAML как RenderTransform изображения — берём его через каст.
+    private ScaleTransform? ImgZoomTransform => ImgPreview.RenderTransform as ScaleTransform;
+
     private void SldImageZoom_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
-        ImgZoom.ScaleX = e.NewValue;
-        ImgZoom.ScaleY = e.NewValue;
+        if (ImgZoomTransform is { } zoom)
+        {
+            zoom.ScaleX = e.NewValue;
+            zoom.ScaleY = e.NewValue;
+        }
         TxtImageZoomValue.Text = $"{Math.Round(e.NewValue * 100)}%";
     }
 

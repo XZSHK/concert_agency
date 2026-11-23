@@ -29,7 +29,7 @@
                 <Image Grid.Row="0" x:Name="HeroImage" Source="{Binding ImageSource}" Stretch="Uniform"
                        RenderTransformOrigin="50%,50%" PointerWheelChanged="HeroImage_PointerWheelChanged">
                     <Image.RenderTransform>
-                        <ScaleTransform x:Name="HeroZoom" ScaleX="1" ScaleY="1"/>
+                        <ScaleTransform ScaleX="1" ScaleY="1"/>
                     </Image.RenderTransform>
                 </Image>
 

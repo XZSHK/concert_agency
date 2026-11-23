@@ -205,7 +205,7 @@
                                 <Image x:Name="ImgPreview" Stretch="Uniform"
                                        RenderTransformOrigin="50%,50%">
                                     <Image.RenderTransform>
-                                        <ScaleTransform x:Name="ImgZoom" ScaleX="1" ScaleY="1"/>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
                                     </Image.RenderTransform>
                                 </Image>
                                 <StackPanel x:Name="ImgDropHint" HorizontalAlignment="Center" VerticalAlignment="Center"
