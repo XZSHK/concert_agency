@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.Input;
 using Avalonia.Media;
@@ -313,7 +314,49 @@ public partial class ProducerDashboardWindow : Window
         TxtAgeRestriction.Text = "";
         TxtImagePath.Text = "";
         CmbHalls.SelectedItem = null;
+        ResetPosterView();
         UpdateImagePreview(null);
+    }
+
+    // ---------- Масштаб и кадр предпросмотра афиши ----------
+
+    private void SldImageZoom_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        ImgZoom.ScaleX = e.NewValue;
+        ImgZoom.ScaleY = e.NewValue;
+        TxtImageZoomValue.Text = $"{Math.Round(e.NewValue * 100)}%";
+    }
+
+    private void SldFrameHeight_ValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        ImgDropZone.Height = e.NewValue;
+        TxtFrameHeightValue.Text = $"{Math.Round(e.NewValue)} px";
+    }
+
+    private void BtnFitUniform_Click(object? sender, RoutedEventArgs e) => SetPosterStretch(Stretch.Uniform);
+    private void BtnFillCrop_Click(object? sender, RoutedEventArgs e) => SetPosterStretch(Stretch.UniformToFill);
+
+    private void SetPosterStretch(Stretch mode)
+    {
+        ImgPreview.Stretch = mode;
+        bool fit = mode == Stretch.Uniform;
+        var gold = new SolidColorBrush(Color.Parse("#FFD700"));
+        var dark = new SolidColorBrush(Color.Parse("#22223A"));
+        var darkText = new SolidColorBrush(Color.Parse("#C9C9D9"));
+        BtnFitUniform.Background = fit ? gold : dark;
+        BtnFitUniform.Foreground = fit ? Brushes.Black : darkText;
+        BtnFillCrop.Background = fit ? dark : gold;
+        BtnFillCrop.Foreground = fit ? darkText : Brushes.Black;
+    }
+
+    // Возвращает масштаб, размер кадра и режим «Вписать» к значениям по умолчанию.
+    private void ResetPosterView()
+    {
+        SldImageZoom.Value = 1.0;
+        SldFrameHeight.Value = 170;
+        SetPosterStretch(Stretch.Uniform);
+        TxtImageZoomValue.Text = "100%";
+        TxtFrameHeightValue.Text = "170 px";
     }
 
     private void BtnCancelEdit_Click(object? sender, RoutedEventArgs e) => ResetEventForm();
