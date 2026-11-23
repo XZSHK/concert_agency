@@ -100,9 +100,9 @@
                                         BoxShadow="0 10 28 0 #55000000" HorizontalAlignment="Stretch">
                                     <Grid ColumnDefinitions="240, *">
 
-                                        <!-- Картинка из img/ -->
+                                        <!-- Картинка из img/ (вписана целиком — отдаление) -->
                                         <Border Background="#22223A" ClipToBounds="True">
-                                            <Image Source="{Binding ImageSource}" Stretch="UniformToFill"/>
+                                            <Image Source="{Binding ImageSource}" Stretch="Uniform" Margin="6"/>
                                         </Border>
 
                                         <!-- Информация -->

@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using MySql.Data.MySqlClient;
@@ -106,6 +107,28 @@ public partial class BookingWindow : Window
         TxtParterreQty.Text = _parterreQty.ToString();
         TxtVipQty.Text = _vipQty.ToString();
         UpdatePrices();
+    }
+
+    // ---------- Масштаб афиши в герой-баннере ----------
+
+    private double _heroZoom = 1.0;
+
+    private void HeroImage_PointerWheelChanged(object? sender, PointerWheelEventArgs e)
+    {
+        ApplyHeroZoom(_heroZoom + (e.Delta.Y >= 0 ? 0.15 : -0.15));
+        e.Handled = true;
+    }
+
+    private void BtnHeroZoomIn_Click(object? sender, RoutedEventArgs e) => ApplyHeroZoom(_heroZoom + 0.25);
+    private void BtnHeroZoomOut_Click(object? sender, RoutedEventArgs e) => ApplyHeroZoom(_heroZoom - 0.25);
+    private void BtnHeroZoomReset_Click(object? sender, RoutedEventArgs e) => ApplyHeroZoom(1.0);
+
+    private void ApplyHeroZoom(double value)
+    {
+        _heroZoom = Math.Clamp(value, 0.4, 2.5);
+        HeroZoom.ScaleX = _heroZoom;
+        HeroZoom.ScaleY = _heroZoom;
+        TxtHeroZoom.Content = $"{Math.Round(_heroZoom * 100)}%";
     }
 
     private void BtnCancel_Click(object? sender, RoutedEventArgs e)

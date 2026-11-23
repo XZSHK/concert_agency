@@ -21,11 +21,33 @@
 
     <Grid RowDefinitions="Auto, *" Margin="18">
 
-        <!-- ═══════ Герой-баннер с картинкой из img/ ═══════ -->
-        <Border CornerRadius="18" ClipToBounds="True" MinHeight="190"
-                BorderBrush="#2E2E46" BorderThickness="1">
-            <Grid RowDefinitions="150, Auto">
-                <Image Grid.Row="0" Source="{Binding ImageSource}" Stretch="UniformToFill"/>
+        <!-- ═══════ Герой-баннер с картинкой из img/ (колесико мыши / кнопки — масштаб) ═══════ -->
+        <Border x:Name="HeroBorder" CornerRadius="18" ClipToBounds="True" MinHeight="230"
+                BorderBrush="#2E2E46" BorderThickness="1" Background="#0F0F18"
+                PointerWheelChanged="HeroImage_PointerWheelChanged">
+            <Grid RowDefinitions="230, Auto">
+                <Image Grid.Row="0" x:Name="HeroImage" Source="{Binding ImageSource}" Stretch="Uniform"
+                       RenderTransformOrigin="50%,50%" PointerWheelChanged="HeroImage_PointerWheelChanged">
+                    <Image.RenderTransform>
+                        <ScaleTransform x:Name="HeroZoom" ScaleX="1" ScaleY="1"/>
+                    </Image.RenderTransform>
+                </Image>
+
+                <!-- Кнопки масштаба -->
+                <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                            Orientation="Horizontal" Spacing="6" Margin="10">
+                    <Button Content="−" Width="34" Height="34" FontSize="18" Background="#CC17172A"
+                            Foreground="White" CornerRadius="8" Click="BtnHeroZoomOut_Click"/>
+                    <Button x:Name="TxtHeroZoom" Content="100%" MinWidth="48" Height="34" Background="#CC17172A"
+                            Foreground="#FFD700" FontSize="12" FontWeight="Bold" CornerRadius="8"
+                            Click="BtnHeroZoomReset_Click" ToolTip.Tip="Сбросить масштаб"/>
+                    <Button Content="+" Width="34" Height="34" FontSize="18" Background="#CC17172A"
+                            Foreground="White" CornerRadius="8" Click="BtnHeroZoomIn_Click"/>
+                </StackPanel>
+                <TextBlock Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12,0,0,8"
+                           Text="🔍 Колесико мыши или кнопки — масштаб афиши" FontSize="10"
+                           Foreground="#A6A6BF" IsHitTestVisible="False"/>
+
                 <Border Grid.Row="1" Background="#E617172A" Padding="26,16">
                     <StackPanel Spacing="4">
                         <TextBlock x:Name="TxtConcertName" FontSize="24" FontWeight="Black" Foreground="#FFD700"/>
