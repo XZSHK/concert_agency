@@ -58,6 +58,10 @@ dotnet test Avalon.sln
 
 ## Реализация ТЗ
 
+### Дополнительные концерты и афиши
+
+В `img/` добавлены афиши вымышленных коллективов (имена в свободном использовании): «Северное сияние» (альт-рок), «Мята Лемон» (инди-поп), «Анна Волкова» (поп), «Монтевидео» (джаз-квинтет), «TIDAL ECHO» (электроника), «Зимняя сказка» (симфонический оркестр). Скрипт `add_concerts.sql` вставит 6 концертов (даты 05.12.2026–30.01.2027) в `concert_events` и идемпотентен; залы назначаются по кругу из первых занятых залов (можно заменить на свои id). Выполните его один раз в phpMyAdmin. Постеры копируются в вывод сборки вместе с остальными картинками `img/`.
+
 ### База данных (7 таблиц MySQL)
 
 Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`.
@@ -166,6 +170,6 @@ Core/                          — чистая логика без БД/UI: Ord
 Services/                      — OrderService (транзакции, квоты), TicketExportService,
                                  QrCodeHelper, ImageSourceHelper (img/ → Bitmap)
 Avalon.Tests/                  — xUnit-тесты (ПК 1.4)
-img/                           — папка афиш: файлы, указанные в concert_events.image_path
+img/                           — папка афиш: файлы, указанные в concert_events.image_path (6 новых афиш + placeholder.jpg); также add_concerts.sql — разовая вставка 6 концертов
                                  (имя файла, URL или полный путь; при отсутствии — placeholder.jpg)
 ```
