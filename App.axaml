@@ -59,5 +59,35 @@
         <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#CC242442" />
         </Style>
+
+        <!-- ══ Наведение и нажатие: цвет текста НЕ меняется (тёмная тема Fluent иначе красит в Highlight) ══ -->
+        <Style Selector="Button.darkyellow:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.darkyellow:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.buy:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.buy:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.gold:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.gold:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.green:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.green:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.accent:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.dark:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.dark:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.nav:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#E6BE00" /></Style>
+        <Style Selector="Button.link:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#E6BE00" /></Style>
+        <Style Selector="Button.outline:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.outline:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.danger:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.blue:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#9EC1FF" /></Style>
+        <Style Selector="Button.blue:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#9EC1FF" /></Style>
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.ghost:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.ghostgold:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FFD700" /></Style>
+        <Style Selector="Button.ghostgold:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FFD700" /></Style>
+        <Style Selector="Button.qty:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.qty:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
     </Application.Styles>
 </Application>

@@ -177,7 +177,7 @@
                                         <Button Classes="green" Content="Оплатить" Background="#2BEE8C" Foreground="#121212"
                                                 FontSize="12" FontWeight="SemiBold" Padding="10,6" CornerRadius="6"
                                                 Click="BtnPayOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanPay}"/>
-                                        <Button Classes="dark" Content="Скачать билет" Background="#22223A" Foreground="#FFFFFF"
+                                        <Button Classes="dark" Content="Скачать билет" Background="#22223A" Foreground="#C9C9D9"
                                                 FontSize="12" Padding="10,6" CornerRadius="6"
                                                 Click="BtnExportOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanExport}"/>
                                         <Button Classes="danger" Content="Отменить" Background="#3A2430" Foreground="#FF6B6B"

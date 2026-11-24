@@ -38,7 +38,7 @@
                             Orientation="Horizontal" Spacing="6" Margin="10">
                     <Button Classes="ghost" Content="−" Width="34" Height="34" FontSize="18" Background="#CC17172A"
                             Foreground="White" CornerRadius="8" Click="BtnHeroZoomOut_Click"/>
-                    <Button x:Name="TxtHeroZoom" Classes="ghost" Content="100%" MinWidth="48" Height="34" Background="#CC17172A"
+                    <Button x:Name="TxtHeroZoom" Classes="ghost ghostgold" Content="100%" MinWidth="48" Height="34" Background="#CC17172A"
                             Foreground="#FFD700" FontSize="12" FontWeight="Bold" CornerRadius="8"
                             Click="BtnHeroZoomReset_Click" ToolTip.Tip="Сбросить масштаб"/>
                     <Button Classes="ghost" Content="+" Width="34" Height="34" FontSize="18" Background="#CC17172A"
@@ -166,7 +166,7 @@
                                 Padding="18,12" CornerRadius="10" Click="BtnPay_Click"
                                 FontSize="14" IsEnabled="False"/>
                         <Button x:Name="BtnExportTicket" Classes="dark" Content="СКАЧАТЬ БИЛЕТ"
-                                Background="#22223A" Foreground="White"
+                                Background="#22223A" Foreground="#C9C9D9"
                                 Padding="18,12" CornerRadius="10" Click="BtnExportTicket_Click"
                                 FontSize="14" IsEnabled="False"/>
                     </StackPanel>

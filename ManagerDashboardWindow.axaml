@@ -78,7 +78,7 @@
                                  Foreground="White" BorderBrush="#2E2E46" FontSize="13"
                                  Padding="10,8" VerticalContentAlignment="Center"
                                  TextChanged="TxtFilterDate_TextChanged"/>
-                        <Button Classes="dark" Content="✕" Background="#22223A" Foreground="#8F8FA6"
+                        <Button Classes="dark" Content="✕" Background="#22223A" Foreground="#C9C9D9"
                                 Width="36" Height="36" CornerRadius="9" FontSize="14"
                                 Click="BtnClearFilter_Click" ToolTip.Tip="Сбросить фильтр"/>
                     </StackPanel>

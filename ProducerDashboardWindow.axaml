@@ -246,7 +246,7 @@
                                     <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
                                         <TextBlock Text="Режим кадра" FontSize="11" Foreground="#C9C9D9"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Button x:Name="BtnFitUniform" Classes="dark" Content="Вписать" Padding="12,7" FontSize="11"
+                                            <Button x:Name="BtnFitUniform" Classes="gold" Content="Вписать" Padding="12,7" FontSize="11"
                                                     CornerRadius="6" Background="#FFD700" Foreground="#121212"
                                                     FontWeight="SemiBold" Click="BtnFitUniform_Click"/>
                                             <Button x:Name="BtnFillCrop" Classes="dark" Content="Заполнить" Padding="12,7" FontSize="11"
