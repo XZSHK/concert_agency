@@ -23,9 +23,6 @@
         <Style Selector="TextBox:focus /template/ Border">
             <Setter Property="BorderBrush" Value="#FFD700" />
         </Style>
-        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.8" />
-        </Style>
     </Window.Styles>
 
     <Grid>

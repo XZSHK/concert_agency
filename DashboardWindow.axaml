@@ -24,7 +24,6 @@
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22223A" />
-            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.buy:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#FFE255" />
