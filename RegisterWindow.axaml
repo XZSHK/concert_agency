@@ -24,7 +24,7 @@
             <Setter Property="BorderBrush" Value="#FFD700" />
         </Style>
         <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Foreground" Value="#FFD700" />
+            <Setter Property="Opacity" Value="0.8" />
         </Style>
     </Window.Styles>
 

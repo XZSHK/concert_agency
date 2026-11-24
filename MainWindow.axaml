@@ -24,7 +24,7 @@
             <Setter Property="BorderBrush" Value="#FFD700" />
         </Style>
         <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Foreground" Value="#FFD700" />
+            <Setter Property="Opacity" Value="0.8" />
         </Style>
     </Window.Styles>
 
@@ -40,7 +40,7 @@
                 <!-- Логотип -->
                 <StackPanel Spacing="6" Margin="0,0,0,6">
                     <Border Width="64" Height="64" CornerRadius="18" Background="#FFD700"
-                            HorizontalAlignment="Center" BoxShadow="0 6 18 0 #55FFD700">
+                            HorizontalAlignment="Center" BoxShadow="0 6 18 0 #44000000">
                         <TextBlock Text="AP" FontSize="30" FontWeight="Black" Foreground="#121212"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
