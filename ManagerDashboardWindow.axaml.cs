@@ -1,9 +1,11 @@
 using Avalonia.Controls;
+using Avalonia.Controls.DataGrid;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using MySql.Data.MySqlClient;
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using Avalonia.Collections;
 using Avalon.Core;
 using Avalon.Services;
 
@@ -28,14 +30,34 @@ public class OrderData
 
 public partial class ManagerDashboardWindow : Window
 {
-    public ObservableCollection<OrderData> Orders { get; set; } = new();
-
+    private readonly List<OrderData> _allOrders = new();
+    private readonly DataGridCollectionView _ordersView;
     private bool _isUpdatingFilter = false;
 
     public ManagerDashboardWindow()
     {
         InitializeComponent();
-        this.DataContext = this;
+
+        _ordersView = new DataGridCollectionView(_allOrders)
+        {
+            Filter = ApplyFilter,
+        };
+        GridOrders.ItemsSource = _ordersView;
+        GridOrders.LoadingRow += GridOrders_LoadingRow;
+        GridOrders.UnloadingRow += GridOrders_UnloadingRow;
+
+        // Элементы фильтра по статусам (ТЗ: фильтрация по статусам)
+        CmbStatusFilter.ItemsSource = new List<string>
+        {
+            "Все статусы",
+            OrderStatus.Booking,
+            OrderStatus.Paid,
+            OrderStatus.Issued,
+            OrderStatus.EntryPassed,
+            OrderStatus.Refund,
+        };
+        CmbStatusFilter.SelectedIndex = 0;
+
         this.Opened += (s, e) => LoadData();
     }
 
@@ -44,8 +66,50 @@ public partial class ManagerDashboardWindow : Window
         TxtUserName.Text = name;
     }
 
-    /// <summary>Загрузка заказов; если задан фильтр — только заказы на концерты этой даты.</summary>
-    private void LoadData(string? dateFilter = null)
+    // ---------- Мгновенная фильтрация (поиск + статус + дата) ----------
+
+    private string? CurrentDateFilter =>
+        string.IsNullOrWhiteSpace(TxtFilterDate.Text) ? null : TxtFilterDate.Text.Trim();
+
+    private bool ApplyFilter(object item)
+    {
+        if (item is not OrderData o) return false;
+
+        // Поиск по номеру / покупателю / концерту
+        string search = TxtSearch?.Text?.Trim() ?? "";
+        if (search.Length > 0)
+        {
+            bool matches =
+                o.OrderRef.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                o.BuyerName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                o.ArtistName.Contains(search, StringComparison.OrdinalIgnoreCase);
+            if (!matches) return false;
+        }
+
+        // Фильтр по статусу
+        if (CmbStatusFilter?.SelectedItem is string status && status != "Все статусы" &&
+            o.Status != status)
+            return false;
+
+        // Фильтр по дате концерта (дд.мм.гггг)
+        string? dateFilter = CurrentDateFilter;
+        if (!string.IsNullOrWhiteSpace(dateFilter) &&
+            InputMasks.TryParseDate(dateFilter, out DateTime filterDate))
+        {
+            if (o.EventDate.Date != filterDate.Date) return false;
+        }
+
+        return true;
+    }
+
+    private void RefreshFilters()
+    {
+        _ordersView.Refresh();
+    }
+
+    // ---------- Загрузка данных ----------
+
+    private void LoadData()
     {
         try
         {
@@ -56,28 +120,16 @@ public partial class ManagerDashboardWindow : Window
                        b.full_name as buyer_name, e.artist_group_name, e.event_date
                 FROM ticket_orders o
                 JOIN ticket_buyers b ON o.buyer_id = b.id
-                JOIN concert_events e ON o.event_id = e.id";
-
-            bool hasFilter = false;
-            DateTime filterDate = default;
-            if (!string.IsNullOrWhiteSpace(dateFilter) &&
-                InputMasks.TryParseDate(dateFilter, out filterDate))
-            {
-                query += " WHERE DATE(e.event_date) = @filterDate";
-                hasFilter = true;
-            }
-
-            query += " ORDER BY o.order_datetime DESC";
+                JOIN concert_events e ON o.event_id = e.id
+                ORDER BY o.order_datetime DESC";
 
             using var cmd = new MySqlCommand(query, conn);
-            if (hasFilter)
-                cmd.Parameters.AddWithValue("@filterDate", filterDate.Date);
-
             using var reader = cmd.ExecuteReader();
-            Orders.Clear();
+
+            _allOrders.Clear();
             while (reader.Read())
             {
-                Orders.Add(new OrderData
+                _allOrders.Add(new OrderData
                 {
                     Id = reader.GetInt32("id"),
                     OrderRef = reader.GetString("order_reference"),
@@ -85,17 +137,22 @@ public partial class ManagerDashboardWindow : Window
                     ArtistName = reader.GetString("artist_group_name"),
                     EventDate = reader.GetDateTime("event_date"),
                     TotalAmount = reader.GetDecimal("total_amount"),
-                    Status = reader.GetString("status")
+                    Status = reader.GetString("status"),
                 });
             }
+
+            _ordersView.Refresh();
         }
         catch (Exception ex) { ShowMessage($"Ошибка БД: {ex.Message}", false); }
     }
 
-    private string? CurrentFilter =>
-        string.IsNullOrWhiteSpace(TxtFilterDate.Text) ? null : TxtFilterDate.Text.Trim();
+    // ---------- Обработчики панели инструментов ----------
 
-    // Маска даты: дд.мм.гггг (автоточка).
+    private void TxtSearch_TextChanged(object? sender, TextChangedEventArgs e) => RefreshFilters();
+
+    private void CmbStatusFilter_SelectionChanged(object? sender, SelectionChangedEventArgs e) => RefreshFilters();
+
+    // Маска даты: дд.мм.гггг (автоточка) + мгновенный фильтр.
     private void TxtFilterDate_TextChanged(object? sender, TextChangedEventArgs e)
     {
         if (_isUpdatingFilter) return;
@@ -106,23 +163,44 @@ public partial class ManagerDashboardWindow : Window
         TxtFilterDate.CaretIndex = formatted.Length;
 
         _isUpdatingFilter = false;
-
-        // Автоматически применяем фильтр, когда дата введена полностью.
-        if (formatted.Length == 10)
-            LoadData(formatted);
-        else if (formatted.Length == 0)
-            LoadData();
+        RefreshFilters();
     }
 
     private void BtnClearFilter_Click(object? sender, RoutedEventArgs e)
     {
         TxtFilterDate.Text = "";
-        LoadData();
+        RefreshFilters();
     }
 
-    private void BtnRefresh_Click(object? sender, RoutedEventArgs e) => LoadData(CurrentFilter);
+    private void BtnRefresh_Click(object? sender, RoutedEventArgs e) => LoadData();
 
-    // --- Переходы FSM для менеджера ---
+    // ---------- Цветовая индикация критических состояний ----------
+
+    private static readonly string[] StatusRowClasses = { "order-critical", "order-refund", "order-done" };
+
+    private void GridOrders_LoadingRow(object? sender, DataGridRowEventArgs e)
+    {
+        e.Row.Classes.Remove("order-critical");
+        e.Row.Classes.Remove("order-refund");
+        e.Row.Classes.Remove("order-done");
+
+        if (e.Row.DataContext is not OrderData order) return;
+
+        switch (order.Status)
+        {
+            case OrderStatus.Booking: e.Row.Classes.Add("order-critical"); break;   // неоплаченная бронь — критично
+            case OrderStatus.Refund: e.Row.Classes.Add("order-refund"); break;      // возврат — выделяем красноватым
+            case OrderStatus.EntryPassed: e.Row.Classes.Add("order-done"); break;   // закрытый — зелёным
+        }
+    }
+
+    private void GridOrders_UnloadingRow(object? sender, DataGridRowEventArgs e)
+    {
+        foreach (var cls in StatusRowClasses)
+            e.Row.Classes.Remove(cls);
+    }
+
+    // ---------- Действия по FSM ----------
 
     private void BtnPay_Click(object? sender, RoutedEventArgs e) =>
         RunFsmAction(sender, order =>
@@ -145,20 +223,42 @@ public partial class ManagerDashboardWindow : Window
             ShowMessage($"Заказ {order.OrderRef}: контроль на входе пройден.", true);
         });
 
-    private void BtnRefund_Click(object? sender, RoutedEventArgs e) =>
-        RunFsmAction(sender, order =>
+    private async void BtnRefund_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn || btn.Tag is not OrderData order) return;
+
+        // ТЗ: отмена требует причины длиной не менее 10 символов (модальный диалог).
+        var dialog = new CancelReasonDialog();
+        string? reason = await dialog.ShowDialog<string?>(this);
+        if (string.IsNullOrWhiteSpace(reason)) return;
+
+        RunFsmAction(order, () =>
         {
-            // Правило ТЗ (возврат < 24 ч запрещён) и проверка FSM — внутри OrderService/OrderStateMachine.
-            OrderService.Refund(order.Id, "Возврат оформлен менеджером");
+            OrderService.Refund(order.Id, reason);
             ShowMessage($"Заказ {order.OrderRef}: возврат оформлен.", true);
         });
+    }
+
+    private void BtnViewDocument_Click(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not Button btn || btn.Tag is not OrderData order) return;
+
+        var window = new OrderDetailsWindow(order.Id);
+        window.ShowDialog(this);
+        LoadData();
+    }
 
     private void RunFsmAction(object? sender, Action<OrderData> action)
     {
         if (sender is not Button btn || btn.Tag is not OrderData order) return;
+        RunFsmAction(order, () => action(order));
+    }
+
+    private void RunFsmAction(OrderData order, Action action)
+    {
         try
         {
-            action(order);
+            action();
         }
         catch (Exception ex)
         {
@@ -166,7 +266,7 @@ public partial class ManagerDashboardWindow : Window
         }
         finally
         {
-            LoadData(CurrentFilter);
+            LoadData();
         }
     }
 

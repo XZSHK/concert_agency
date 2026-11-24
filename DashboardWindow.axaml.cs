@@ -188,7 +188,7 @@ public partial class DashboardWindow : Window
             {
                 MyOrders.Add(new MyOrder
                 {
-                    Id = reader.GetInt64("id"),
+                    Id = Convert.ToInt64(reader["id"]),
                     OrderRef = reader.GetString("order_reference"),
                     ArtistName = reader.GetString("artist_group_name"),
                     EventDate = reader.GetDateTime("event_date"),
@@ -309,12 +309,18 @@ public partial class DashboardWindow : Window
         catch (Exception ex) { ShowOrdersMessage($"Ошибка экспорта: {ex.Message}", false); }
     }
 
-    private void BtnCancelOrder_Click(object? sender, RoutedEventArgs e)
+    private async void BtnCancelOrder_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is not Button btn || btn.Tag is not MyOrder order) return;
+
+        // ТЗ: отмена документа требует причины не короче 10 символов (модальный диалог).
+        var dialog = new CancelReasonDialog();
+        string? reason = await dialog.ShowDialog<string?>(this);
+        if (string.IsNullOrWhiteSpace(reason)) return;
+
         try
         {
-            OrderService.Refund(order.Id, "Отменено покупателем");
+            OrderService.Refund(order.Id, reason);
             ShowOrdersMessage($"Заказ {order.OrderRef}: возврат оформлен.", true);
             LoadMyOrders();
         }

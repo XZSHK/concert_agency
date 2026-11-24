@@ -70,9 +70,16 @@
                     <!-- Пароль -->
                     <StackPanel Spacing="6">
                         <TextBlock Text="ПАРОЛЬ" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="●"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="*"
+                                     Height="44" CornerRadius="10" Background="#22223A"
+                                     Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                            <Button x:Name="BtnTogglePassword" Grid.Column="1" Classes="dark" Content="👁"
+                                    Width="44" Height="44" Margin="8,0,0,0" Padding="0"
+                                    Background="#22223A" Foreground="#C9C9D9" CornerRadius="10"
+                                    FontSize="16" ToolTip.Tip="Показать / скрыть пароль"
+                                    Click="BtnTogglePassword_Click"/>
+                        </Grid>
                     </StackPanel>
 
                     <CheckBox x:Name="ChkPromo" Content="Получать промокоды и скидки"

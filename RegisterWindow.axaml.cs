@@ -19,6 +19,12 @@ public partial class RegisterWindow : Window
         InitializeComponent();
     }
 
+    private void BtnTogglePassword_Click(object? sender, RoutedEventArgs e)
+    {
+        // Переключение маски пароля: '*' ↔ пусто (показать текст).
+        TxtPassword.PasswordChar = TxtPassword.PasswordChar == '*' ? '\0' : '*';
+    }
+
     // --- МАСКА ТЕЛЕФОНА: +7 (999) 123-45-67 ---
     private void TxtPhone_TextChanged(object? sender, TextChangedEventArgs e)
     {
