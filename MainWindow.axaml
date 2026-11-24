@@ -26,9 +26,6 @@
         <Style Selector="Button.accent:pressed /template/ ContentPresenter">
             <Setter Property="Background" Value="#E6BE00" />
         </Style>
-        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.75" />
-        </Style>
         <Style Selector="TextBox:focus /template/ Border">
             <Setter Property="BorderBrush" Value="#FFD700" />
         </Style>
@@ -83,9 +80,9 @@
                         Background="#FFD700" Foreground="#121212" FontSize="15" FontWeight="Bold"
                         CornerRadius="10" Click="BtnLogin_Click"/>
 
-                <Button x:Name="BtnGoToRegister" Classes="link" Content="Нет аккаунта? Зарегистрируйтесь"
-                        HorizontalAlignment="Stretch" Background="Transparent"
-                        Foreground="#2BEE8C" FontSize="13" Padding="6,8"
+                <Button x:Name="BtnGoToRegister" Classes="darkyellow" Content="Нет аккаунта? Зарегистрируйтесь"
+                        HorizontalAlignment="Stretch" Height="46" Background="#E6BE00"
+                        Foreground="#121212" FontSize="14" FontWeight="Bold" CornerRadius="10"
                         Click="BtnGoToRegister_Click"/>
 
                 <TextBlock x:Name="TxtError" Text="" Foreground="#FF5A5A"

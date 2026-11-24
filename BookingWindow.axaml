@@ -156,7 +156,7 @@
 
                     <!-- Кнопки -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                        <Button Content="Отмена" Background="#22223A" Foreground="#C9C9D9"
+                        <Button Classes="dark" Content="Отмена" Background="#22223A" Foreground="#C9C9D9"
                                 Padding="18,12" CornerRadius="10" Click="BtnCancel_Click" FontSize="14"/>
                         <Button x:Name="BtnConfirm" Classes="buy" Content="ОФОРМИТЬ"
                                 Background="#FFD700" Foreground="#121212" FontWeight="Bold"
@@ -165,7 +165,7 @@
                                 Background="#2BEE8C" Foreground="#121212" FontWeight="Bold"
                                 Padding="18,12" CornerRadius="10" Click="BtnPay_Click"
                                 FontSize="14" IsEnabled="False"/>
-                        <Button x:Name="BtnExportTicket" Content="СКАЧАТЬ БИЛЕТ"
+                        <Button x:Name="BtnExportTicket" Classes="dark" Content="СКАЧАТЬ БИЛЕТ"
                                 Background="#22223A" Foreground="White"
                                 Padding="18,12" CornerRadius="10" Click="BtnExportTicket_Click"
                                 FontSize="14" IsEnabled="False"/>

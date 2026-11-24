@@ -47,7 +47,7 @@
                     <Separator Background="#22223A"/>
                     <TextBlock x:Name="TxtUserName" Foreground="#E6E6F0" FontWeight="SemiBold"
                                TextWrapping="Wrap"/>
-                    <Button Content="Выйти из аккаунта" HorizontalAlignment="Stretch"
+                    <Button Classes="outline" Content="Выйти из аккаунта" HorizontalAlignment="Stretch"
                             Background="Transparent" BorderBrush="#3A3A55" BorderThickness="1"
                             Foreground="#FF6B6B" Padding="14,11" CornerRadius="10"
                             Click="BtnLogout_Click"/>
@@ -79,12 +79,12 @@
                                  Foreground="White" BorderBrush="#2E2E46" FontSize="13"
                                  Padding="10,8" VerticalContentAlignment="Center"
                                  TextChanged="TxtFilterDate_TextChanged"/>
-                        <Button Content="✕" Background="#22223A" Foreground="#8F8FA6"
+                        <Button Classes="dark" Content="✕" Background="#22223A" Foreground="#8F8FA6"
                                 Width="36" Height="36" CornerRadius="9" FontSize="14"
                                 Click="BtnClearFilter_Click" ToolTip.Tip="Сбросить фильтр"/>
                     </StackPanel>
 
-                    <Button Grid.Column="2" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
+                    <Button Grid.Column="2" Classes="dark" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
                             Padding="16,9" CornerRadius="8" Click="BtnRefresh_Click"
                             VerticalAlignment="Center"/>
                 </Grid>

@@ -14,9 +14,19 @@
         </Style>
 
         <!-- ══ Наведение: фон кнопки под её цветовой ролью ══ -->
-        <!-- Базовое для тёмных кнопок без класса (#22223A -> чуть светлее) -->
-        <Style Selector="Button:pointerover /template/ ContentPresenter">
+        <!-- Тёмные кнопки (класс dark): чуть светлее -->
+        <Style Selector="Button.dark:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#2E2E46" />
+        </Style>
+        <Style Selector="Button.dark:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#34344E" />
+        </Style>
+        <!-- Тёмно-жёлтая кнопка: при наведении чуть поярче жёлтый -->
+        <Style Selector="Button.darkyellow:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFD700" />
+        </Style>
+        <Style Selector="Button.darkyellow:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFE255" />
         </Style>
         <!-- Текстовые ссылки (класса link) фон при наведении не меняют -->
         <Style Selector="Button.link:pointerover /template/ ContentPresenter">
@@ -40,6 +50,10 @@
         <!-- Красные (опасные) кнопки -->
         <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#55303E" />
+        </Style>
+        <!-- Прозрачные контурные красные кнопки (Выйти) -->
+        <Style Selector="Button.outline:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3A2430" />
         </Style>
         <!-- Полупрозрачные кнопки на баннере -->
         <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
