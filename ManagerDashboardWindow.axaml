@@ -16,7 +16,7 @@
             <Setter Property="Padding" Value="16,13" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22223A" />
@@ -105,16 +105,16 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="local:OrderData">
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4">
-                                        <Button Content="Оплачен" Background="#2BEE8C" Foreground="#121212"
+                                        <Button Classes="green" Content="Оплачен" Background="#2BEE8C" Foreground="#121212"
                                                 FontSize="11" FontWeight="SemiBold" Padding="10,6" CornerRadius="6"
                                                 Click="BtnPay_Click" Tag="{Binding}" IsEnabled="{Binding CanPay}"/>
-                                        <Button Content="Выписать" Background="#FFD700" Foreground="#121212"
+                                        <Button Classes="gold" Content="Выписать" Background="#FFD700" Foreground="#121212"
                                                 FontSize="11" FontWeight="SemiBold" Padding="10,6" CornerRadius="6"
                                                 Click="BtnIssue_Click" Tag="{Binding}" IsEnabled="{Binding CanIssue}"/>
-                                        <Button Content="Контроль на входе" Background="#2B3A55" Foreground="#9EC1FF"
+                                        <Button Classes="blue" Content="Контроль на входе" Background="#2B3A55" Foreground="#9EC1FF"
                                                 FontSize="11" Padding="10,6" CornerRadius="6"
                                                 Click="BtnEntryControl_Click" Tag="{Binding}" IsEnabled="{Binding CanControl}"/>
-                                        <Button Content="Возврат" Background="#3A2430" Foreground="#FF6B6B"
+                                        <Button Classes="danger" Content="Возврат" Background="#3A2430" Foreground="#FF6B6B"
                                                 FontSize="11" Padding="10,6" CornerRadius="6"
                                                 Click="BtnRefund_Click" Tag="{Binding}" IsEnabled="{Binding CanRefund}"/>
                                     </StackPanel>

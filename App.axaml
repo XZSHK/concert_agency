@@ -6,5 +6,44 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <!-- ══ Глобально: текст во всех кнопках по центру ══ -->
+        <Style Selector="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- ══ Наведение: фон кнопки под её цветовой ролью ══ -->
+        <!-- Базовое для тёмных кнопок без класса (#22223A -> чуть светлее) -->
+        <Style Selector="Button:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2E2E46" />
+        </Style>
+        <!-- Текстовые ссылки (класса link) фон при наведении не меняют -->
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- Золотые кнопки -->
+        <Style Selector="Button.gold:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFE255" />
+        </Style>
+        <Style Selector="Button.gold:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E6BE00" />
+        </Style>
+        <!-- Зелёные кнопки -->
+        <Style Selector="Button.green:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#43F29E" />
+        </Style>
+        <!-- Синие кнопки -->
+        <Style Selector="Button.blue:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#35486A" />
+        </Style>
+        <!-- Красные (опасные) кнопки -->
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#55303E" />
+        </Style>
+        <!-- Полупрозрачные кнопки на баннере -->
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#CC242442" />
+        </Style>
     </Application.Styles>
 </Application>

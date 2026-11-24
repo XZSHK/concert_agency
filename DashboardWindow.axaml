@@ -20,7 +20,7 @@
             <Setter Property="Padding" Value="16,13" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22223A" />
@@ -175,13 +175,13 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="local:MyOrder">
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4">
-                                        <Button Content="Оплатить" Background="#2BEE8C" Foreground="#121212"
+                                        <Button Classes="green" Content="Оплатить" Background="#2BEE8C" Foreground="#121212"
                                                 FontSize="12" FontWeight="SemiBold" Padding="10,6" CornerRadius="6"
                                                 Click="BtnPayOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanPay}"/>
                                         <Button Content="Скачать билет" Background="#22223A" Foreground="#FFFFFF"
                                                 FontSize="12" Padding="10,6" CornerRadius="6"
                                                 Click="BtnExportOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanExport}"/>
-                                        <Button Content="Отменить" Background="#3A2430" Foreground="#FF6B6B"
+                                        <Button Classes="danger" Content="Отменить" Background="#3A2430" Foreground="#FF6B6B"
                                                 FontSize="12" Padding="10,6" CornerRadius="6"
                                                 Click="BtnCancelOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanCancel}"/>
                                     </StackPanel>
@@ -230,7 +230,7 @@
                         <TextBlock x:Name="TxtProfilePromo" FontSize="15" FontWeight="Bold" Foreground="#2BEE8C"/>
                     </StackPanel>
 
-                    <Button Content="СОХРАНИТЬ ИЗМЕНЕНИЯ" Background="#FFD700" Foreground="#121212"
+                    <Button Classes="gold" Content="СОХРАНИТЬ ИЗМЕНЕНИЯ" Background="#FFD700" Foreground="#121212"
                             FontWeight="Bold" Height="46" CornerRadius="10" Click="BtnSaveProfile_Click"
                             Margin="0,8,0,0"/>
                     <TextBlock x:Name="TxtProfileMessage" Foreground="#2BEE8C" IsVisible="False"
