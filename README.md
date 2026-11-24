@@ -60,7 +60,25 @@ dotnet test Avalon.sln
 
 ### База данных (7 таблиц MySQL)
 
-Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`; для онлайн-заказов покупателя столбец `ticket_orders.user_id` должен допускать пустое значение (`ALTER TABLE \`ticket_orders\` MODIFY \`user_id\` int(11) NULL;`) — заказ при этом остаётся привязанным к `ticket_buyers` через `buyer_id`, а `user_id` (сотрудник, оформивший продажу) заполняется только при заказе из кассы.
+Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`.
+
+**Онлайн-заказы покупателя и `ticket_orders.user_id`.** Заказ покупателя привязан к `ticket_buyers` через `buyer_id`. Столбец `user_id` (сотрудник, оформивший продажу) в исходном дампе `NOT NULL`, поэтому онлайн-заказ оформляется от технического аккаунта с ролью «Клиент». Выполните один раз в phpMyAdmin (скрипт идемпотентен):
+
+```sql
+-- 1) Роль «Клиент» (если её ещё нет)
+INSERT INTO `roles` (`name`)
+SELECT 'Клиент'
+WHERE NOT EXISTS (SELECT 1 FROM `roles` WHERE `name` = 'Клиент');
+
+-- 2) Технический аккаунт онлайн-канала (войти под ним невозможно/незачем)
+INSERT INTO `users` (`role_id`, `login`, `password_hash`, `full_name`)
+SELECT r.id, 'client', SHA2('online-channel-internal', 256), 'Клиент (онлайн-заказ)'
+FROM `roles` r
+WHERE r.name = 'Клиент'
+  AND NOT EXISTS (SELECT 1 FROM `users` WHERE `login` = 'client');
+```
+
+Альтернатива без технического аккаунта — разрешить пустое значение: `ALTER TABLE \`ticket_orders\` MODIFY \`user_id\` int(11) NULL;` (вставка без `user_id` и так поддержана в коде). Заказ из кассы сотрудника всегда подставляет в `user_id` его id.
 
 ### Бизнес-логика и расчётная формула (`Core/OrderCalculator.cs`)
 

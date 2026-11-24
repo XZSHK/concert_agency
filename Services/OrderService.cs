@@ -49,9 +49,12 @@ public static class OrderService
         string orderRef = GenerateNextReference(conn, tx);
 
         long orderId;
-        // Онлайн-заказ покупателя не оформляет сотрудник — user_id подставляем только когда он есть.
-        // Привязка к покупателю всегда остаётся в buyer_id -> ticket_buyers.id.
-        string insertSql = staffUserId.HasValue
+        // Онлайн-заказ покупателя оформляется от технического аккаунта с ролью «Клиент»
+        // (его создаёт один раз SQL из README); заказ всё равно привязан к покупателю через buyer_id.
+        // Заказ из кассы — от сотрудника (staffUserId). Если роль не заведена — вставляем без user_id
+        // (сработает только в БД, где столбец допускает пустое значение).
+        int? authorId = staffUserId ?? ResolveOnlineAuthorId(conn, tx);
+        string insertSql = authorId.HasValue
             ? @"INSERT INTO ticket_orders
                 (order_reference, user_id, buyer_id, event_id, order_datetime, service_fee, total_amount, status)
               VALUES (@ref, @user, @buyer, @event, @date, @fee, @total, @status)"
@@ -62,8 +65,8 @@ public static class OrderService
         {
             using var cmd = new MySqlCommand(insertSql, conn, tx);
             cmd.Parameters.AddWithValue("@ref", orderRef);
-            if (staffUserId.HasValue)
-                cmd.Parameters.AddWithValue("@user", staffUserId.Value);
+            if (authorId.HasValue)
+                cmd.Parameters.AddWithValue("@user", authorId.Value);
             cmd.Parameters.AddWithValue("@buyer", buyerId);
             cmd.Parameters.AddWithValue("@event", eventId);
             cmd.Parameters.AddWithValue("@date", DateTime.Now);
@@ -77,9 +80,8 @@ public static class OrderService
                                         ex.Message.IndexOf("user_id", StringComparison.OrdinalIgnoreCase) >= 0)
         {
             throw new InvalidOperationException(
-                "Заказ не сохранён: в вашей БД столбец ticket_orders.user_id обязателен. " +
-                "Для онлайн-покупок он должен допускать пустое значение — выполните один раз в phpMyAdmin: " +
-                "ALTER TABLE `ticket_orders` MODIFY `user_id` int(11) NULL;", ex);
+                "Онлайн-канал не настроен: в БД нет роли «Клиент» / технического аккаунта с ней, " +
+                "а столбец ticket_orders.user_id обязателен. Выполните один раз в phpMyAdmin SQL из README (раздел про user_id).", ex);
         }
 
         InsertSeats(conn, tx, orderId, "Партер", parterreQty, totals.ParterreFinalPrice, soldParterre);
@@ -138,6 +140,16 @@ public static class OrderService
     /// <summary>Истёк срок брони 15 минут: заказ уходит в 'Возврат билета' с причиной.</summary>
     public static void ExpireBooking(long orderId) =>
         ChangeStatus(orderId, OrderStatus.Refund, "Бронь истекла (15 мин)");
+
+    // Id технического аккаунта онлайн-канала (роль «Клиент») либо null, если роль не заведена.
+    private static int? ResolveOnlineAuthorId(MySqlConnection conn, MySqlTransaction tx)
+    {
+        using var cmd = new MySqlCommand(
+            @"SELECT u.id FROM users u JOIN roles r ON r.id = u.role_id
+              WHERE r.name = 'Клиент' ORDER BY u.id LIMIT 1", conn, tx);
+        var value = cmd.ExecuteScalar();
+        return value is null or DBNull ? null : Convert.ToInt32(value);
+    }
 
     // ---------- Внутреннее ----------
 
