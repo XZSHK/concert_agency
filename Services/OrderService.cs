@@ -49,13 +49,21 @@ public static class OrderService
         string orderRef = GenerateNextReference(conn, tx);
 
         long orderId;
-        using (var cmd = new MySqlCommand(
-            @"INSERT INTO ticket_orders
+        // Онлайн-заказ покупателя не оформляет сотрудник — user_id подставляем только когда он есть.
+        // Привязка к покупателю всегда остаётся в buyer_id -> ticket_buyers.id.
+        string insertSql = staffUserId.HasValue
+            ? @"INSERT INTO ticket_orders
                 (order_reference, user_id, buyer_id, event_id, order_datetime, service_fee, total_amount, status)
-              VALUES (@ref, @user, @buyer, @event, @date, @fee, @total, @status)", conn, tx))
+              VALUES (@ref, @user, @buyer, @event, @date, @fee, @total, @status)"
+            : @"INSERT INTO ticket_orders
+                (order_reference, buyer_id, event_id, order_datetime, service_fee, total_amount, status)
+              VALUES (@ref, @buyer, @event, @date, @fee, @total, @status)";
+        try
         {
+            using var cmd = new MySqlCommand(insertSql, conn, tx);
             cmd.Parameters.AddWithValue("@ref", orderRef);
-            cmd.Parameters.AddWithValue("@user", (object?)staffUserId ?? DBNull.Value);
+            if (staffUserId.HasValue)
+                cmd.Parameters.AddWithValue("@user", staffUserId.Value);
             cmd.Parameters.AddWithValue("@buyer", buyerId);
             cmd.Parameters.AddWithValue("@event", eventId);
             cmd.Parameters.AddWithValue("@date", DateTime.Now);
@@ -64,6 +72,14 @@ public static class OrderService
             cmd.Parameters.AddWithValue("@status", OrderStatus.Booking);
             cmd.ExecuteNonQuery();
             orderId = cmd.LastInsertedId;
+        }
+        catch (MySqlException ex) when (ex.Number == 1048 || ex.Number == 1364 ||
+                                        ex.Message.IndexOf("user_id", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            throw new InvalidOperationException(
+                "Заказ не сохранён: в вашей БД столбец ticket_orders.user_id обязателен. " +
+                "Для онлайн-покупок он должен допускать пустое значение — выполните один раз в phpMyAdmin: " +
+                "ALTER TABLE `ticket_orders` MODIFY `user_id` int(11) NULL;", ex);
         }
 
         InsertSeats(conn, tx, orderId, "Партер", parterreQty, totals.ParterreFinalPrice, soldParterre);

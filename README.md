@@ -60,7 +60,7 @@ dotnet test Avalon.sln
 
 ### База данных (7 таблиц MySQL)
 
-Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`.
+Приложение использует существующую БД `Concert_Agency` и таблицы `roles`, `users`, `concert_halls`, `concert_events`, `ticket_buyers`, `ticket_orders`, `ticket_order_seats`. Скрипта создания или пересоздания схемы в проекте нет. Для входа покупателей код ожидает поле `ticket_buyers.password`; для афиш — `concert_events.image_path`; для онлайн-заказов покупателя столбец `ticket_orders.user_id` должен допускать пустое значение (`ALTER TABLE \`ticket_orders\` MODIFY \`user_id\` int(11) NULL;`) — заказ при этом остаётся привязанным к `ticket_buyers` через `buyer_id`, а `user_id` (сотрудник, оформивший продажу) заполняется только при заказе из кассы.
 
 ### Бизнес-логика и расчётная формула (`Core/OrderCalculator.cs`)
 
