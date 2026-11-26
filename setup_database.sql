@@ -11,8 +11,8 @@
 --  добавит недостающие записи, ничего не удалит.
 --
 --  Пароли ДЕМО (SHA2(...,256)):
---    admin / admin123 · manager / manager123 · producer / producer123
---    покупатели: ivan.petrov@example.com / buyer123 (и остальные buyer*/123)
+--    manager / manager123 · producer / producer123
+--    покупатели: ivan.petrov@example.com / buyer123 (и остальные @example.com)
 --  Перед защитой/эксплуатацией смените пароли!
 -- ═══════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ USE Concert_Agency;
 
 -- ───────────────────────── 1. Таблицы ─────────────────────────
 
--- Роли (ТЗ: Администратор и Оператор/Менеджер)
+-- Роли (по ТЗ: Менеджер билетной программы / Продюсер гастрольных туров / Клиент)
 CREATE TABLE IF NOT EXISTS roles (
   id    INT AUTO_INCREMENT PRIMARY KEY,
   name  VARCHAR(100) NOT NULL UNIQUE
@@ -127,8 +127,6 @@ DEALLOCATE PREPARE stmt;
 -- ──────────────────── 2. Роли и пользователи ────────────────────
 
 INSERT INTO roles (name)
-SELECT 'Администратор' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'Администратор');
-INSERT INTO roles (name)
 SELECT 'Менеджер билетной программы' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'Менеджер билетной программы');
 INSERT INTO roles (name)
 SELECT 'Продюсер гастрольных туров' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'Продюсер гастрольных туров');
@@ -136,11 +134,6 @@ INSERT INTO roles (name)
 SELECT 'Клиент' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'Клиент');
 
 -- Сотрудники (пароли SHA2; логины для входа)
-INSERT INTO users (role_id, login, password_hash, full_name)
-SELECT r.id, 'admin', SHA2('admin123', 256), 'Администратор системы'
-FROM roles r WHERE r.name = 'Администратор'
-  AND NOT EXISTS (SELECT 1 FROM users WHERE login = 'admin');
-
 INSERT INTO users (role_id, login, password_hash, full_name)
 SELECT r.id, 'manager', SHA2('manager123', 256), 'Менеджер билетной программы'
 FROM roles r WHERE r.name = 'Менеджер билетной программы'
@@ -301,7 +294,16 @@ WHERE NOT EXISTS (
   WHERE x.order_id = o.id AND x.sector_type = s.sector AND x.row_num = s.row_num AND x.seat_num = s.seat_num
 );
 
--- ───────────────────── 7. Проверка результата ─────────────────────
+-- ───────────────────── 7. Очистка демо-записей admin (если была выполнена ранняя версия скрипта) ─────────────────────
+-- Роль «Администратор» и учётка admin не входят в ТЗ. Если вы уже запускали
+-- предыдущую версию скрипта и они попали в вашу БД, удалите их вручную:
+--
+--   DELETE FROM users WHERE login = 'admin';
+--   DELETE FROM roles WHERE name = 'Администратор' AND NOT EXISTS (SELECT 1 FROM users u WHERE u.role_id = roles.id);
+--
+-- (user_id у созданных admin-ом заказов при DELETE FROM users обнулится — ON DELETE SET NULL.)
+
+-- ───────────────────── 8. Проверка результата ─────────────────────
 SELECT 'roles'              AS table_name, COUNT(*) AS rows_count FROM roles
 UNION ALL SELECT 'users', COUNT(*) FROM users
 UNION ALL SELECT 'concert_halls', COUNT(*) FROM concert_halls

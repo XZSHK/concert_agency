@@ -159,8 +159,7 @@ public partial class MainWindow : Window
 
         if (roleName.Contains("Продюсер"))
             dashboard = new ProducerDashboardWindow(fullName);
-        else if (roleName.Contains("Менеджер") || roleName.Contains("Администратор"))
-            // Администратор по ТЗ работает с правами оператора/менеджера билетной программы.
+        else if (roleName.Contains("Менеджер"))
             dashboard = new ManagerDashboardWindow(fullName);
         else
             // Прочие роли — кабинет покупателя без заказов (id = 0).
