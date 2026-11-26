@@ -181,7 +181,7 @@ FROM (
          'Анна Волкова', '2026-12-19 19:30:00', '12+', 2500.00, 6500.00, 'afisha_anna_volkova.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 3),
-         'Оркестр русских народных инструментов', '2026-12-26 19:00:00', '6+', 900.00, 2800.00, NULL
+         'Оркестр русских народных инструментов', '2026-12-26 19:00:00', '6+', 900.00, 2800.00, 'afisha_russkie_narodnye.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 0),
          'Монтевидео (джаз-квинтет)', '2027-01-09 19:00:00', '6+', 1500.00, 4000.00, 'afisha_montevideo.jpg'
@@ -193,19 +193,19 @@ FROM (
          'Зимняя сказка (симфонический оркестр)', '2027-01-30 18:00:00', '6+', 2000.00, 5500.00, 'afisha_zimnyaya_skazka.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 3),
-         'Классическая симфония', '2027-02-13 19:00:00', '6+', 1600.00, 4200.00, NULL
+         'Классическая симфония', '2027-02-13 19:00:00', '6+', 1600.00, 4200.00, 'afisha_klassicheskaya_simfoniya.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 4),
-         'Этно Кузбасс — фольклорный ансамбль', '2027-02-27 18:30:00', '6+', 700.00, 2200.00, NULL
+         'Этно Кузбасс — фольклорный ансамбль', '2027-02-27 18:30:00', '6+', 700.00, 2200.00, 'afisha_etno_kuzbass.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 5),
-         'Таисия Полякова — камерный вечер', '2027-03-14 19:00:00', '12+', 1400.00, 3900.00, NULL
+         'Таисия Полякова — камерный вечер', '2027-03-14 19:00:00', '12+', 1400.00, 3900.00, 'afisha_taisia_polyakova.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 0),
-         'Космос: планетарий-шоу с оркестром', '2027-03-28 20:00:00', '6+', 1700.00, 4600.00, NULL
+         'Космос: планетарий-шоу с оркестром', '2027-03-28 20:00:00', '6+', 1700.00, 4600.00, 'afisha_kosmos_shou.jpg'
   UNION ALL
   SELECT (SELECT id FROM concert_halls ORDER BY id LIMIT 1 OFFSET 4),
-         'Весенний балет «Лебединое озеро»', '2027-04-11 19:00:00', '12+', 2800.00, 7800.00, NULL
+         'Весенний балет «Лебединое озеро»', '2027-04-11 19:00:00', '12+', 2800.00, 7800.00, 'afisha_lebedinoe_ozero.jpg'
 ) src
 WHERE NOT EXISTS (
   SELECT 1 FROM concert_events e WHERE e.artist_group_name = src.artist AND e.event_date = src.event_date
@@ -293,6 +293,16 @@ WHERE NOT EXISTS (
   SELECT 1 FROM ticket_order_seats x
   WHERE x.order_id = o.id AND x.sector_type = s.sector AND x.row_num = s.row_num AND x.seat_num = s.seat_num
 );
+
+-- ──────────────── 6.1. Афиши для БД, где скрипт уже запускался ────────────────
+-- Идемпотентно проставляем image_path там, где он ещё не задан
+-- (вставки концертов выше защищены WHERE NOT EXISTS и сами себя не обновят).
+UPDATE concert_events SET image_path = 'afisha_russkie_narodnye.jpg'      WHERE artist_group_name = 'Оркестр русских народных инструментов' AND image_path IS NULL;
+UPDATE concert_events SET image_path = 'afisha_klassicheskaya_simfoniya.jpg' WHERE artist_group_name = 'Классическая симфония'            AND image_path IS NULL;
+UPDATE concert_events SET image_path = 'afisha_etno_kuzbass.jpg'          WHERE artist_group_name = 'Этно Кузбасс — фольклорный ансамбль'  AND image_path IS NULL;
+UPDATE concert_events SET image_path = 'afisha_taisia_polyakova.jpg'      WHERE artist_group_name = 'Таисия Полякова — камерный вечер'      AND image_path IS NULL;
+UPDATE concert_events SET image_path = 'afisha_kosmos_shou.jpg'           WHERE artist_group_name = 'Космос: планетарий-шоу с оркестром'    AND image_path IS NULL;
+UPDATE concert_events SET image_path = 'afisha_lebedinoe_ozero.jpg'       WHERE artist_group_name = 'Весенний балет «Лебединое озеро»'      AND image_path IS NULL;
 
 -- ───────────────────── 7. Очистка демо-записей admin (если была выполнена ранняя версия скрипта) ─────────────────────
 -- Роль «Администратор» и учётка admin не входят в ТЗ. Если вы уже запускали
