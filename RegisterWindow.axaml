@@ -20,14 +20,8 @@
     </Window.Resources>
 
     <Window.Styles>
-        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFE255" />
-        </Style>
         <Style Selector="TextBox:focus /template/ Border">
             <Setter Property="BorderBrush" Value="#FFD700" />
-        </Style>
-        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.75" />
         </Style>
     </Window.Styles>
 
@@ -76,22 +70,29 @@
                     <!-- Пароль -->
                     <StackPanel Spacing="6">
                         <TextBlock Text="ПАРОЛЬ" FontSize="11" FontWeight="Bold" Foreground="#8F8FA6" LetterSpacing="1"/>
-                        <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="●"
-                                 Height="44" CornerRadius="10" Background="#22223A"
-                                 Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox x:Name="TxtPassword" PlaceholderText="Минимум 6 символов" PasswordChar="*"
+                                     Height="44" CornerRadius="10" Background="#22223A"
+                                     Foreground="White" BorderBrush="#2E2E46" FontSize="14" Padding="12,11"/>
+                            <Button x:Name="BtnTogglePassword" Grid.Column="1" Classes="dark" Content="👁"
+                                    Width="44" Height="44" Margin="8,0,0,0" Padding="0"
+                                    Background="#22223A" Foreground="#C9C9D9" CornerRadius="10"
+                                    FontSize="16" ToolTip.Tip="Показать / скрыть пароль"
+                                    Click="BtnTogglePassword_Click"/>
+                        </Grid>
                     </StackPanel>
 
                     <CheckBox x:Name="ChkPromo" Content="Получать промокоды и скидки"
                               FontSize="14" Foreground="#E6E6F0" Margin="0,6"/>
 
-                    <Button x:Name="BtnRegister" Classes="accent" Content="ЗАРЕГИСТРИРОВАТЬСЯ"
+                    <Button x:Name="BtnRegister" Classes="darkyellow" Content="ЗАРЕГИСТРИРОВАТЬСЯ"
                             HorizontalAlignment="Stretch" Height="48" Margin="0,6,0,0"
-                            Background="#FFD700" Foreground="#121212" FontSize="15" FontWeight="Bold"
+                            Background="#E6BE00" Foreground="#121212" FontSize="15" FontWeight="Bold"
                             CornerRadius="10" Click="BtnRegister_Click"/>
 
                     <Button x:Name="BtnBack" Classes="link" Content="Уже есть аккаунт? Войти"
                             HorizontalAlignment="Stretch" Background="Transparent"
-                            Foreground="#2BEE8C" FontSize="13" Padding="6,6" Click="BtnBack_Click"/>
+                            Foreground="#E6BE00" FontSize="13" Padding="6,6" Click="BtnBack_Click"/>
 
                     <TextBlock x:Name="TxtMessage" Text="" Foreground="#FF5A5A"
                                HorizontalAlignment="Center" IsVisible="False"

@@ -20,15 +20,6 @@
     </Window.Resources>
 
     <Window.Styles>
-        <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#FFE255" />
-        </Style>
-        <Style Selector="Button.accent:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#E6BE00" />
-        </Style>
-        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
-            <Setter Property="Opacity" Value="0.75" />
-        </Style>
         <Style Selector="TextBox:focus /template/ Border">
             <Setter Property="BorderBrush" Value="#FFD700" />
         </Style>
@@ -46,7 +37,7 @@
                 <!-- Логотип -->
                 <StackPanel Spacing="6" Margin="0,0,0,6">
                     <Border Width="64" Height="64" CornerRadius="18" Background="#FFD700"
-                            HorizontalAlignment="Center" BoxShadow="0 6 18 0 #55FFD700">
+                            HorizontalAlignment="Center" BoxShadow="0 6 18 0 #44000000">
                         <TextBlock Text="AP" FontSize="30" FontWeight="Black" Foreground="#121212"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
@@ -71,21 +62,33 @@
                 <StackPanel Spacing="6">
                     <TextBlock Text="ПАРОЛЬ" FontSize="11" FontWeight="Bold"
                                Foreground="#8F8FA6" LetterSpacing="1"/>
-                    <TextBox x:Name="TxtPassword" PlaceholderText="Введите пароль"
-                             PasswordChar="●" Height="46" CornerRadius="10"
-                             Background="#22223A" Foreground="White" BorderBrush="#2E2E46"
-                             FontSize="14" Padding="12,11" KeyDown="TxtPassword_KeyDown"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox x:Name="TxtPassword" PlaceholderText="Введите пароль"
+                                 PasswordChar="*" Height="46" CornerRadius="10"
+                                 Background="#22223A" Foreground="White" BorderBrush="#2E2E46"
+                                 FontSize="14" Padding="12,11" KeyDown="TxtPassword_KeyDown"/>
+                        <Button x:Name="BtnTogglePassword" Grid.Column="1" Classes="dark" Content="👁"
+                                Width="46" Height="46" Margin="8,0,0,0" Padding="0"
+                                Background="#22223A" Foreground="#C9C9D9" CornerRadius="10"
+                                FontSize="16" ToolTip.Tip="Показать / скрыть пароль"
+                                Click="BtnTogglePassword_Click"/>
+                    </Grid>
                 </StackPanel>
 
                 <!-- Кнопки -->
-                <Button x:Name="BtnLogin" Classes="accent" Content="ВОЙТИ"
+                <Button x:Name="BtnLogin" Classes="darkyellow" Content="ВОЙТИ"
                         HorizontalAlignment="Stretch" Height="48" Margin="0,8,0,0"
-                        Background="#FFD700" Foreground="#121212" FontSize="15" FontWeight="Bold"
+                        Background="#E6BE00" Foreground="#121212" FontSize="15" FontWeight="Bold"
                         CornerRadius="10" Click="BtnLogin_Click"/>
+
+                <!-- Обратный отсчёт блокировки после 3 неверных попыток (ТЗ) -->
+                <TextBlock x:Name="TxtLockout" IsVisible="False" HorizontalAlignment="Center"
+                           Foreground="#FFB020" FontSize="12" FontWeight="SemiBold"
+                           TextWrapping="Wrap" Text="Слишком много попыток входа. Повторите через 10 с."/>
 
                 <Button x:Name="BtnGoToRegister" Classes="link" Content="Нет аккаунта? Зарегистрируйтесь"
                         HorizontalAlignment="Stretch" Background="Transparent"
-                        Foreground="#2BEE8C" FontSize="13" Padding="6,8"
+                        Foreground="#E6BE00" FontSize="13" Padding="6,8"
                         Click="BtnGoToRegister_Click"/>
 
                 <TextBlock x:Name="TxtError" Text="" Foreground="#FF5A5A"

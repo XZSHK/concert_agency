@@ -36,12 +36,12 @@
                 <!-- Кнопки масштаба -->
                 <StackPanel Grid.Row="0" HorizontalAlignment="Right" VerticalAlignment="Top"
                             Orientation="Horizontal" Spacing="6" Margin="10">
-                    <Button Content="−" Width="34" Height="34" FontSize="18" Background="#CC17172A"
+                    <Button Classes="ghost" Content="−" Width="34" Height="34" FontSize="18" Background="#CC17172A"
                             Foreground="White" CornerRadius="8" Click="BtnHeroZoomOut_Click"/>
-                    <Button x:Name="TxtHeroZoom" Content="100%" MinWidth="48" Height="34" Background="#CC17172A"
+                    <Button x:Name="TxtHeroZoom" Classes="ghost ghostgold" Content="100%" MinWidth="48" Height="34" Background="#CC17172A"
                             Foreground="#FFD700" FontSize="12" FontWeight="Bold" CornerRadius="8"
                             Click="BtnHeroZoomReset_Click" ToolTip.Tip="Сбросить масштаб"/>
-                    <Button Content="+" Width="34" Height="34" FontSize="18" Background="#CC17172A"
+                    <Button Classes="ghost" Content="+" Width="34" Height="34" FontSize="18" Background="#CC17172A"
                             Foreground="White" CornerRadius="8" Click="BtnHeroZoomIn_Click"/>
                 </StackPanel>
                 <TextBlock Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12,0,0,8"
@@ -156,17 +156,17 @@
 
                     <!-- Кнопки -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="12">
-                        <Button Content="Отмена" Background="#22223A" Foreground="#C9C9D9"
+                        <Button Classes="dark" Content="Отмена" Background="#22223A" Foreground="#C9C9D9"
                                 Padding="18,12" CornerRadius="10" Click="BtnCancel_Click" FontSize="14"/>
                         <Button x:Name="BtnConfirm" Classes="buy" Content="ОФОРМИТЬ"
                                 Background="#FFD700" Foreground="#121212" FontWeight="Bold"
                                 Padding="18,12" CornerRadius="10" Click="BtnConfirm_Click" FontSize="14"/>
-                        <Button x:Name="BtnPay" Content="ОПЛАТИТЬ"
+                        <Button x:Name="BtnPay" Classes="green" Content="ОПЛАТИТЬ"
                                 Background="#2BEE8C" Foreground="#121212" FontWeight="Bold"
                                 Padding="18,12" CornerRadius="10" Click="BtnPay_Click"
                                 FontSize="14" IsEnabled="False"/>
-                        <Button x:Name="BtnExportTicket" Content="СКАЧАТЬ БИЛЕТ"
-                                Background="#22223A" Foreground="White"
+                        <Button x:Name="BtnExportTicket" Classes="dark" Content="СКАЧАТЬ БИЛЕТ"
+                                Background="#22223A" Foreground="#C9C9D9"
                                 Padding="18,12" CornerRadius="10" Click="BtnExportTicket_Click"
                                 FontSize="14" IsEnabled="False"/>
                     </StackPanel>

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using MySql.Data.MySqlClient;
 using System;
 using Avalon.Core;
@@ -9,13 +10,30 @@ namespace Avalon;
 
 public partial class MainWindow : Window
 {
+    // ТЗ: после трёх неверных попыток входа — блокировка на 10 секунд с обратным отсчётом.
+    private int _failedAttempts;
+    private DispatcherTimer? _lockoutTimer;
+    private int _lockoutSecondsLeft;
+
     public MainWindow()
     {
         InitializeComponent();
     }
 
+    private void BtnTogglePassword_Click(object? sender, RoutedEventArgs e)
+    {
+        // Переключение маски пароля: '*' ↔ пусто (показать текст).
+        TxtPassword.PasswordChar = TxtPassword.PasswordChar == '*' ? '\0' : '*';
+    }
+
     private void BtnLogin_Click(object? sender, RoutedEventArgs e)
     {
+        if (_lockoutTimer != null)
+        {
+            // Блокировка активна — ввод недоступен (поля и кнопка отключены).
+            return;
+        }
+
         string login = TxtLogin.Text?.Trim() ?? "";
         string password = TxtPassword.Text?.Trim() ?? "";
 
@@ -79,6 +97,7 @@ public partial class MainWindow : Window
             }
 
             ShowError("Неверный логин или пароль");
+            RegisterFailedAttempt();
         }
         catch (Exception ex)
         {
@@ -86,8 +105,56 @@ public partial class MainWindow : Window
         }
     }
 
+    // Счётчик неверных попыток → блокировка на 10 секунд с обратным отсчётом.
+    private void RegisterFailedAttempt()
+    {
+        _failedAttempts++;
+        if (_failedAttempts < 3) return;
+
+        _lockoutSecondsLeft = 10;
+        TxtLogin.IsEnabled = false;
+        TxtPassword.IsEnabled = false;
+        BtnLogin.IsEnabled = false;
+        BtnTogglePassword.IsEnabled = false;
+        TxtLockout.IsVisible = true;
+        UpdateLockoutText();
+
+        _lockoutTimer?.Stop();
+        _lockoutTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _lockoutTimer.Tick += LockoutTimer_Tick;
+        _lockoutTimer.Start();
+    }
+
+    private void LockoutTimer_Tick(object? sender, EventArgs e)
+    {
+        _lockoutSecondsLeft--;
+        if (_lockoutSecondsLeft <= 0)
+        {
+            StopLockout();
+            return;
+        }
+        UpdateLockoutText();
+    }
+
+    private void UpdateLockoutText() =>
+        TxtLockout.Text = $"Слишком много попыток входа. Повторите через {_lockoutSecondsLeft} с.";
+
+    private void StopLockout()
+    {
+        _lockoutTimer?.Stop();
+        _lockoutTimer = null;
+        _failedAttempts = 0;
+        TxtLogin.IsEnabled = true;
+        TxtPassword.IsEnabled = true;
+        BtnLogin.IsEnabled = true;
+        BtnTogglePassword.IsEnabled = true;
+        TxtLockout.IsVisible = false;
+    }
+
     private void OpenDashboardForRole(string roleName, string fullName)
     {
+        StopLockout(); // успешный вход: счётчик неверных попыток сброшен
+
         Window dashboard;
 
         if (roleName.Contains("Продюсер"))
@@ -104,6 +171,8 @@ public partial class MainWindow : Window
 
     private void OpenDashboardForBuyerId(int buyerId, string fullName)
     {
+        StopLockout(); // успешный вход: счётчик неверных попыток сброшен
+
         var dashboard = new DashboardWindow(buyerId, fullName);
         dashboard.Show();
         this.Close();

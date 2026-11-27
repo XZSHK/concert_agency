@@ -6,5 +6,88 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+
+        <!-- ══ Глобально: текст во всех кнопках по центру ══ -->
+        <Style Selector="Button">
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- ══ Наведение: фон кнопки под её цветовой ролью ══ -->
+        <!-- Тёмные кнопки (класс dark): чуть светлее -->
+        <Style Selector="Button.dark:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#2E2E46" />
+        </Style>
+        <Style Selector="Button.dark:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#34344E" />
+        </Style>
+        <!-- Тёмно-жёлтая кнопка: при наведении чуть поярче жёлтый -->
+        <Style Selector="Button.darkyellow:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFD700" />
+        </Style>
+        <Style Selector="Button.darkyellow:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFE255" />
+        </Style>
+        <!-- Текстовые ссылки (класса link) фон при наведении не меняют -->
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <!-- Золотые кнопки -->
+        <Style Selector="Button.gold:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#FFE255" />
+        </Style>
+        <Style Selector="Button.gold:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E6BE00" />
+        </Style>
+        <!-- Зелёные кнопки -->
+        <Style Selector="Button.green:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#43F29E" />
+        </Style>
+        <!-- Синие кнопки -->
+        <Style Selector="Button.blue:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#35486A" />
+        </Style>
+        <!-- Красные (опасные) кнопки -->
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#55303E" />
+        </Style>
+        <!-- Прозрачные контурные красные кнопки (Выйти) -->
+        <Style Selector="Button.outline:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#3A2430" />
+        </Style>
+        <!-- Полупрозрачные кнопки на баннере -->
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#CC242442" />
+        </Style>
+
+        <!-- ══ Наведение и нажатие: цвет текста НЕ меняется (тёмная тема Fluent иначе красит в Highlight) ══ -->
+        <Style Selector="Button.darkyellow:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.darkyellow:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.buy:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.buy:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.gold:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.gold:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.green:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.green:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.accent:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.accent:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#121212" /></Style>
+        <Style Selector="Button.dark:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.dark:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.nav:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.nav:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#C9C9D9" /></Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#E6BE00" /></Style>
+        <Style Selector="Button.link:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#E6BE00" /></Style>
+        <Style Selector="Button.outline:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.outline:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.danger:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.danger:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FF6B6B" /></Style>
+        <Style Selector="Button.blue:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#9EC1FF" /></Style>
+        <Style Selector="Button.blue:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#9EC1FF" /></Style>
+        <Style Selector="Button.ghost:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.ghost:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.ghostgold:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="#FFD700" /></Style>
+        <Style Selector="Button.ghostgold:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="#FFD700" /></Style>
+        <Style Selector="Button.qty:pointerover /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
+        <Style Selector="Button.qty:pressed /template/ ContentPresenter"><Setter Property="Foreground" Value="White" /></Style>
     </Application.Styles>
 </Application>

@@ -16,11 +16,10 @@
             <Setter Property="Padding" Value="16,13" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22223A" />
-            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.accent:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#FFE255" />
@@ -52,7 +51,7 @@
                     <Separator Background="#22223A"/>
                     <TextBlock x:Name="TxtUserName" Foreground="#E6E6F0" FontWeight="SemiBold"
                                TextWrapping="Wrap"/>
-                    <Button Content="Выйти из аккаунта" HorizontalAlignment="Stretch"
+                    <Button Classes="outline" Content="Выйти из аккаунта" HorizontalAlignment="Stretch"
                             Background="Transparent" BorderBrush="#3A3A55" BorderThickness="1"
                             Foreground="#FF6B6B" Padding="14,11" CornerRadius="10"
                             Click="BtnLogout_Click"/>
@@ -72,7 +71,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="14" Margin="4,0,4,14">
                     <TextBlock Text="Доступные концертные залы" FontSize="19" FontWeight="Bold"
                                Foreground="White" VerticalAlignment="Center"/>
-                    <Button Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
+                    <Button Classes="dark" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
                             Padding="16,8" CornerRadius="8" Click="BtnRefreshHalls_Click"
                             VerticalAlignment="Center"/>
                 </StackPanel>
@@ -96,7 +95,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="14" Margin="4,0,4,14">
                     <TextBlock Text="Концерты и афиши" FontSize="19" FontWeight="Bold"
                                Foreground="White" VerticalAlignment="Center"/>
-                    <Button Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
+                    <Button Classes="dark" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
                             Padding="16,8" CornerRadius="8" Click="BtnRefreshConcerts_Click"
                             VerticalAlignment="Center"/>
                 </StackPanel>
@@ -114,7 +113,7 @@
                         <DataGridTemplateColumn Header="Действия" Width="150">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="local:ProducerEventData">
-                                    <Button Content="Редактировать" Background="#FFD700" Foreground="#121212"
+                                    <Button Classes="gold" Content="Редактировать" Background="#FFD700" Foreground="#121212"
                                             FontSize="12" FontWeight="SemiBold" Padding="12,7" CornerRadius="6"
                                             Margin="0,4" Click="BtnEditEvent_Click" Tag="{Binding}"/>
                                 </DataTemplate>
@@ -247,10 +246,10 @@
                                     <StackPanel Grid.Column="2" Spacing="4" VerticalAlignment="Center">
                                         <TextBlock Text="Режим кадра" FontSize="11" Foreground="#C9C9D9"/>
                                         <StackPanel Orientation="Horizontal" Spacing="6">
-                                            <Button x:Name="BtnFitUniform" Content="Вписать" Padding="12,7" FontSize="11"
+                                            <Button x:Name="BtnFitUniform" Classes="gold" Content="Вписать" Padding="12,7" FontSize="11"
                                                     CornerRadius="6" Background="#FFD700" Foreground="#121212"
                                                     FontWeight="SemiBold" Click="BtnFitUniform_Click"/>
-                                            <Button x:Name="BtnFillCrop" Content="Заполнить" Padding="12,7" FontSize="11"
+                                            <Button x:Name="BtnFillCrop" Classes="dark" Content="Заполнить" Padding="12,7" FontSize="11"
                                                     CornerRadius="6" Background="#22223A" Foreground="#C9C9D9"
                                                     FontWeight="SemiBold" Click="BtnFillCrop_Click"/>
                                         </StackPanel>
@@ -267,7 +266,7 @@
                                     FontSize="15" Click="BtnCreateEvent_Click"
                                     HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                                     MinWidth="280"/>
-                            <Button x:Name="BtnCancelEdit" Content="✕  Отменить редактирование" Height="46"
+                            <Button x:Name="BtnCancelEdit" Classes="dark" Content="✕  Отменить редактирование" Height="46"
                                     CornerRadius="10" Background="#22223A" Foreground="#C9C9D9"
                                     FontWeight="SemiBold" FontSize="14" Click="BtnCancelEdit_Click"
                                     IsVisible="False"/>
@@ -283,7 +282,7 @@
                 <StackPanel Orientation="Horizontal" Spacing="14" Margin="4,0,4,14">
                     <TextBlock Text="Расчёт гонораров исполнителей" FontSize="19" FontWeight="Bold"
                                Foreground="White" VerticalAlignment="Center"/>
-                    <Button Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
+                    <Button Classes="dark" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
                             Padding="16,8" CornerRadius="8" Click="BtnRefreshFees_Click"
                             VerticalAlignment="Center"/>
                 </StackPanel>

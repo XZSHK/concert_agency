@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Avalon.CancelReasonDialog"
+        Title="Причина отмены заказа"
+        WindowStartupLocation="CenterOwner"
+        Width="480" Height="360"
+        CanResize="False"
+        Background="#0F0F18"
+        FontFamily="Inter, Segoe UI, Arial">
+
+    <StackPanel Margin="24,20" Spacing="12">
+        <TextBlock Text="Оформление возврата" FontSize="19" FontWeight="Bold" Foreground="White"/>
+        <TextBlock Foreground="#8F8FA6" FontSize="12" TextWrapping="Wrap"
+                   Text="Укажите причину отмены документа. Причина будет сохранена в документе (cancel_reason). Минимальная длина — 10 символов."/>
+
+        <TextBox x:Name="TxtReason" AcceptsReturn="True" Height="96"
+                 PlaceholderText="Например: покупатель просит вернуть билеты, до концерта больше 24 часов…"
+                 Background="#22223A" Foreground="White" BorderBrush="#2E2E46" CornerRadius="10"
+                 FontSize="13" Padding="12,11" TextChanged="TxtReason_TextChanged"/>
+
+        <TextBlock x:Name="TxtCounter" Text="0 / мин. 10" Foreground="#8F8FA6" FontSize="11"
+                   HorizontalAlignment="Right"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" Margin="0,4,0,0">
+            <Button Classes="dark" Content="Отмена" Background="#22223A" Foreground="#C9C9D9"
+                    Padding="18,10" CornerRadius="8" Click="BtnCancel_Click"/>
+            <Button x:Name="BtnConfirm" Classes="danger" Content="Оформить возврат"
+                    Background="#3A2430" Foreground="#FF6B6B" FontWeight="SemiBold"
+                    Padding="18,10" CornerRadius="8" IsEnabled="False" Click="BtnConfirm_Click"/>
+        </StackPanel>
+    </StackPanel>
+</Window>

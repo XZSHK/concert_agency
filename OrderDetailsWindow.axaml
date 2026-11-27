@@ -1,0 +1,115 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:Avalon.Services"
+        x:Class="Avalon.OrderDetailsWindow"
+        x:DataType="local:OrderDetailsViewModel"
+        Title="Документ — заказ"
+        WindowStartupLocation="CenterOwner"
+        Width="880" Height="640"
+        CanResize="True"
+        Background="#0F0F18"
+        FontFamily="Inter, Segoe UI, Arial">
+
+    <Window.Styles>
+        <Style Selector="TextBox:focus /template/ Border">
+            <Setter Property="BorderBrush" Value="#FFD700" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto, Auto, *, Auto, Auto">
+
+        <!-- ══ Шапка документа ══ -->
+        <Border Grid.Row="0" Background="#15152A" Padding="24,16"
+                BorderBrush="#22223A" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="ЗАКАЗ (ДОКУМЕНТ)" FontSize="11" FontWeight="Bold"
+                               Foreground="#8F8FA6" LetterSpacing="2"/>
+                    <TextBlock Text="{Binding OrderRef}" FontSize="21" FontWeight="Black"
+                               Foreground="#FFD700"/>
+                </StackPanel>
+                <Border Grid.Column="1" Background="#22223A" CornerRadius="16"
+                        Padding="14,6" VerticalAlignment="Center" BorderBrush="#2E2E46" BorderThickness="1">
+                    <TextBlock Text="{Binding Status}" Foreground="#E6E6F0" FontSize="12"
+                               FontWeight="SemiBold"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ══ Реквизиты заголовка ══ -->
+        <Grid Grid.Row="1" Margin="24,16,24,4" ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto">
+            <StackPanel Spacing="2" Margin="0,0,12,10">
+                <TextBlock Text="ДАТА ОФОРМЛЕНИЯ" FontSize="10" FontWeight="Bold" Foreground="#7A7A93" LetterSpacing="1"/>
+                <TextBlock Text="{Binding OrderDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" FontSize="13" Foreground="#E6E6F0"/>
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,10" Grid.Column="1">
+                <TextBlock Text="ПОКУПАТЕЛЬ" FontSize="10" FontWeight="Bold" Foreground="#7A7A93" LetterSpacing="1"/>
+                <TextBlock Text="{Binding BuyerName}" FontSize="13" Foreground="#E6E6F0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,0,10" Grid.Column="2">
+                <TextBlock Text="ОТВЕТСТВЕННЫЙ" FontSize="10" FontWeight="Bold" Foreground="#7A7A93" LetterSpacing="1"/>
+                <TextBlock Text="{Binding ResponsibleName}" FontSize="13" Foreground="#E6E6F0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,10" Grid.Row="1">
+                <TextBlock Text="КОНЦЕРТ" FontSize="10" FontWeight="Bold" Foreground="#7A7A93" LetterSpacing="1"/>
+                <TextBlock Text="{Binding ArtistName}" FontSize="13" Foreground="#E6E6F0" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,12,10" Grid.Row="1" Grid.Column="1">
+                <TextBlock Text="ДАТА КОНЦЕРТА" FontSize="10" FontWeight="Bold" Foreground="#7A7A93" LetterSpacing="1"/>
+                <TextBlock Text="{Binding EventDate, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" FontSize="13" Foreground="#E6E6F0"/>
+            </StackPanel>
+            <StackPanel Spacing="2" Margin="0,0,0,10" Grid.Row="1" Grid.Column="2" IsVisible="{Binding HasCancelReason}">
+                <TextBlock Text="ПРИЧИНА ОТМЕНЫ" FontSize="10" FontWeight="Bold" Foreground="#FF6B6B" LetterSpacing="1"/>
+                <TextBlock Text="{Binding CancelReason}" FontSize="12" Foreground="#FF9B9B" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ══ Строки спецификации (Master-Detail) ══ -->
+        <DataGrid x:Name="GridSeats" Grid.Row="2" Margin="24,4,24,0"
+                  ItemsSource="{Binding Seats}"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  Background="#17172A" RowBackground="#17172A"
+                  Foreground="#E6E6F0" BorderBrush="#2E2E46"
+                  GridLinesVisibility="None" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Сектор" Binding="{Binding SectorType}" Width="110"/>
+                <DataGridTextColumn Header="Ряд" Binding="{Binding RowNum}" Width="80"/>
+                <DataGridTextColumn Header="Место" Binding="{Binding SeatNum}" Width="80"/>
+                <DataGridTextColumn Header="Цена без бейджа" Binding="{Binding BaseSeatPrice, StringFormat='{}{0:N0} ₽'}" Width="*"/>
+                <DataGridTextColumn Header="Сумма позиции" Binding="{Binding FinalSeatCost, StringFormat='{}{0:N0} ₽'}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- ══ Итоги (привязка, пересчёт на лету) ══ -->
+        <StackPanel Grid.Row="3" Margin="24,10,24,0" HorizontalAlignment="Right" Spacing="3">
+            <TextBlock Foreground="#8F8FA6" FontSize="13"
+                       Text="{Binding SeatsCount, StringFormat='Позиций: {0}'}"/>
+            <TextBlock Foreground="#E6E6F0" FontSize="13"
+                       Text="{Binding SeatsTotal, StringFormat='Места: {0:N0} ₽'}"/>
+            <TextBlock Foreground="#E6E6F0" FontSize="13"
+                       Text="{Binding ServiceFee, StringFormat='Сервисный сбор: {0:N0} ₽'}"/>
+            <TextBlock Foreground="#FFD700" FontSize="20" FontWeight="Black" Margin="0,2,0,0"
+                       Text="{Binding Total, StringFormat='ИТОГО: {0:N0} ₽'}"/>
+        </StackPanel>
+
+        <!-- ══ Действия ══ -->
+        <Grid Grid.Row="4" Margin="24,12,24,18" ColumnDefinitions="*,Auto">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <Button x:Name="BtnAddParterre" Classes="dark" Content="+ Партер"
+                        Background="#22223A" Foreground="#C9C9D9" Padding="14,9" CornerRadius="8"
+                        IsEnabled="{Binding IsEditable}" Click="BtnAddParterre_Click"/>
+                <Button x:Name="BtnAddVip" Classes="dark" Content="+ VIP"
+                        Background="#22223A" Foreground="#C9C9D9" Padding="14,9" CornerRadius="8"
+                        IsEnabled="{Binding IsEditable}" Click="BtnAddVip_Click"/>
+                <Button x:Name="BtnDeleteSeat" Classes="danger" Content="Удалить позицию"
+                        Background="#3A2430" Foreground="#FF6B6B" Padding="14,9" CornerRadius="8"
+                        IsEnabled="{Binding IsEditable}" Click="BtnDeleteSeat_Click"/>
+                <TextBlock x:Name="TxtMessage" Foreground="#FF6B6B" FontSize="12" FontWeight="SemiBold"
+                           TextWrapping="Wrap" MaxWidth="280" VerticalAlignment="Center" IsVisible="False"/>
+            </StackPanel>
+            <Button Grid.Column="1" Classes="darkyellow" Content="Закрыть"
+                    Background="#E6BE00" Foreground="#121212" FontWeight="Bold"
+                    Padding="22,10" CornerRadius="8" Click="BtnClose_Click"/>
+        </Grid>
+    </Grid>
+</Window>

@@ -20,11 +20,10 @@
             <Setter Property="Padding" Value="16,13" />
             <Setter Property="CornerRadius" Value="10" />
             <Setter Property="HorizontalAlignment" Value="Stretch" />
-            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
         </Style>
         <Style Selector="Button.nav:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#22223A" />
-            <Setter Property="Foreground" Value="White" />
         </Style>
         <Style Selector="Button.buy:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#FFE255" />
@@ -65,7 +64,7 @@
                                    Foreground="#E6E6F0" FontWeight="SemiBold" TextWrapping="Wrap"
                                    VerticalAlignment="Center" Margin="12,0,0,0"/>
                     </Grid>
-                    <Button x:Name="BtnLogout" Content="Выйти из аккаунта"
+                    <Button x:Name="BtnLogout" Classes="outline" Content="Выйти из аккаунта"
                             HorizontalAlignment="Stretch" Background="Transparent"
                             BorderBrush="#3A3A55" BorderThickness="1" Foreground="#FF6B6B"
                             Padding="14,11" CornerRadius="10" Click="BtnLogout_Click"/>
@@ -87,7 +86,7 @@
                 <Grid ColumnDefinitions="*, Auto" Margin="4,0,4,14">
                     <TextBlock x:Name="TxtEventsMessage" Text="" Foreground="#FF6B6B"
                                VerticalAlignment="Center" IsVisible="False" FontSize="13" TextWrapping="Wrap"/>
-                    <Button Grid.Column="1" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
+                    <Button Grid.Column="1" Classes="dark" Content="Обновить" Background="#22223A" Foreground="#C9C9D9"
                             Padding="16,9" CornerRadius="8" Click="BtnRefreshEvents_Click"/>
                 </Grid>
 
@@ -175,13 +174,13 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate x:DataType="local:MyOrder">
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,4">
-                                        <Button Content="Оплатить" Background="#2BEE8C" Foreground="#121212"
+                                        <Button Classes="green" Content="Оплатить" Background="#2BEE8C" Foreground="#121212"
                                                 FontSize="12" FontWeight="SemiBold" Padding="10,6" CornerRadius="6"
                                                 Click="BtnPayOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanPay}"/>
-                                        <Button Content="Скачать билет" Background="#22223A" Foreground="#FFFFFF"
+                                        <Button Classes="dark" Content="Скачать билет" Background="#22223A" Foreground="#C9C9D9"
                                                 FontSize="12" Padding="10,6" CornerRadius="6"
                                                 Click="BtnExportOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanExport}"/>
-                                        <Button Content="Отменить" Background="#3A2430" Foreground="#FF6B6B"
+                                        <Button Classes="danger" Content="Отменить" Background="#3A2430" Foreground="#FF6B6B"
                                                 FontSize="12" Padding="10,6" CornerRadius="6"
                                                 Click="BtnCancelOrder_Click" Tag="{Binding}" IsEnabled="{Binding CanCancel}"/>
                                     </StackPanel>
@@ -230,7 +229,7 @@
                         <TextBlock x:Name="TxtProfilePromo" FontSize="15" FontWeight="Bold" Foreground="#2BEE8C"/>
                     </StackPanel>
 
-                    <Button Content="СОХРАНИТЬ ИЗМЕНЕНИЯ" Background="#FFD700" Foreground="#121212"
+                    <Button Classes="gold" Content="СОХРАНИТЬ ИЗМЕНЕНИЯ" Background="#FFD700" Foreground="#121212"
                             FontWeight="Bold" Height="46" CornerRadius="10" Click="BtnSaveProfile_Click"
                             Margin="0,8,0,0"/>
                     <TextBlock x:Name="TxtProfileMessage" Foreground="#2BEE8C" IsVisible="False"

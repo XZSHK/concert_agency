@@ -114,6 +114,17 @@ public static class OrderService
         // Бросает InvalidOperationException при недопустимом переходе / возврате < 24 ч.
         OrderStateMachine.Transition(currentStatus, targetStatus, eventDate, DateTime.Now);
 
+        // ТЗ: запрещено переводить в статус оплаты пустой заказ (0 строк спецификации).
+        if (targetStatus == OrderStatus.Paid)
+        {
+            using var countCmd = new MySqlCommand(
+                "SELECT COUNT(*) FROM ticket_order_seats WHERE order_id = @id", conn);
+            countCmd.Parameters.AddWithValue("@id", orderId);
+            if (Convert.ToInt32(countCmd.ExecuteScalar()) == 0)
+                throw new InvalidOperationException(
+                    "Нельзя перевести пустой заказ в статус «Оплачен»: в документе нет позиций.");
+        }
+
         using var upd = new MySqlCommand(
             "UPDATE ticket_orders SET status = @status, cancel_reason = @reason WHERE id = @id", conn);
         upd.Parameters.AddWithValue("@status", targetStatus);
@@ -140,6 +151,247 @@ public static class OrderService
     /// <summary>Истёк срок брони 15 минут: заказ уходит в 'Возврат билета' с причиной.</summary>
     public static void ExpireBooking(long orderId) =>
         ChangeStatus(orderId, OrderStatus.Refund, "Бронь истекла (15 мин)");
+
+
+    // ========== Мастер-деталь: заголовок документа и позиции ==========
+
+    /// <summary>Заголовок документа (реквизиты шапки «Документ»).</summary>
+    public sealed class OrderHeaderInfo
+    {
+        public long OrderId { get; init; }
+        public string OrderRef { get; init; } = "";
+        public DateTime OrderDate { get; init; }
+        public string Status { get; init; } = "";
+        public string? CancelReason { get; init; }
+        public decimal ServiceFee { get; init; }
+        public decimal TotalAmount { get; init; }
+        public string BuyerName { get; init; } = "";
+        public string ArtistName { get; init; } = "";
+        public DateTime EventDate { get; init; }
+        public string? ResponsibleName { get; init; }
+    }
+
+    /// <summary>Позиция документа (строка спецификации).</summary>
+    public sealed class OrderSeatLine
+    {
+        public long SeatId { get; init; }
+        public string SectorType { get; init; } = "";
+        public int RowNum { get; init; }
+        public int SeatNum { get; init; }
+        public decimal BaseSeatPrice { get; init; }
+        public decimal FinalSeatCost { get; init; }
+    }
+
+    /// <summary>Загрузить реквизиты заголовка документа.</summary>
+    public static OrderHeaderInfo LoadHeader(long orderId)
+    {
+        using var conn = DatabaseHelper.GetConnection();
+        return LoadHeader(conn, null, orderId);
+    }
+
+    private static OrderHeaderInfo LoadHeader(MySqlConnection conn, MySqlTransaction? tx, long orderId)
+    {
+        const string sql =
+            @"SELECT o.order_reference, o.order_datetime, o.status, o.cancel_reason,
+                     o.service_fee, o.total_amount,
+                     b.full_name AS buyer_name, e.artist_group_name, e.event_date,
+                     u.full_name AS responsible_name
+              FROM ticket_orders o
+              JOIN ticket_buyers b ON b.id = o.buyer_id
+              JOIN concert_events e ON e.id = o.event_id
+              LEFT JOIN users u ON u.id = o.user_id
+              WHERE o.id = @id";
+        using var cmd = tx is null ? new MySqlCommand(sql, conn) : new MySqlCommand(sql, conn, tx);
+        cmd.Parameters.AddWithValue("@id", orderId);
+        using var reader = cmd.ExecuteReader();
+        if (!reader.Read())
+            throw new InvalidOperationException($"Заказ #{orderId} не найден.");
+
+        return new OrderHeaderInfo
+        {
+            OrderId = orderId,
+            OrderRef = reader.GetString("order_reference"),
+            OrderDate = reader.GetDateTime("order_datetime"),
+            Status = reader.GetString("status"),
+            CancelReason = reader.IsDBNull(reader.GetOrdinal("cancel_reason")) ? null : reader.GetString("cancel_reason"),
+            ServiceFee = reader.GetDecimal("service_fee"),
+            TotalAmount = reader.GetDecimal("total_amount"),
+            BuyerName = reader.GetString("buyer_name"),
+            ArtistName = reader.GetString("artist_group_name"),
+            EventDate = reader.GetDateTime("event_date"),
+            ResponsibleName = reader.IsDBNull(reader.GetOrdinal("responsible_name")) ? null : reader.GetString("responsible_name"),
+        };
+    }
+
+    /// <summary>Загрузить позиции документа (строки спецификации).</summary>
+    public static List<OrderSeatLine> LoadSeats(long orderId)
+    {
+        using var conn = DatabaseHelper.GetConnection();
+        using var cmd = new MySqlCommand(
+            @"SELECT id, sector_type, row_num, seat_num, base_seat_price, final_seat_cost
+              FROM ticket_order_seats
+              WHERE order_id = @id
+              ORDER BY sector_type, row_num, seat_num", conn);
+        cmd.Parameters.AddWithValue("@id", orderId);
+
+        var lines = new List<OrderSeatLine>();
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            lines.Add(new OrderSeatLine
+            {
+                SeatId = Convert.ToInt64(reader["id"]),
+                SectorType = reader.GetString("sector_type"),
+                RowNum = reader.GetInt32("row_num"),
+                SeatNum = reader.GetInt32("seat_num"),
+                BaseSeatPrice = reader.GetDecimal("base_seat_price"),
+                FinalSeatCost = reader.GetDecimal("final_seat_cost"),
+            });
+        }
+        return lines;
+    }
+
+    /// <summary>Добавить одну позицию в документ в статусе «Бронь (15 мин)».</summary>
+    public static void AddSeat(long orderId, string sector)
+    {
+        if (sector != "Партер" && sector != "VIP")
+            throw new ArgumentException("Сектор должен быть «Партер» или «VIP».", nameof(sector));
+
+        using var conn = DatabaseHelper.GetConnection();
+        using var tx = conn.BeginTransaction();
+
+        var header = LoadHeader(conn, tx, orderId);
+        EnsureBooking(header.Status);
+
+        // Цены — из события; вместимость — из зала.
+        decimal parterrePrice, vipPrice; int parterreCapacity, vipCapacity; int eventId;
+        using (var cmd = new MySqlCommand(
+            @"SELECT e.id, e.parterre_price, e.vip_price,
+                     COALESCE(h.parterre_capacity, 0) AS parterre_capacity,
+                     COALESCE(h.vip_capacity, 0) AS vip_capacity
+              FROM ticket_orders o
+              JOIN concert_events e ON e.id = o.event_id
+              JOIN concert_halls h ON h.id = e.hall_id
+              WHERE o.id = @id", conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@id", orderId);
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                throw new InvalidOperationException($"Заказ #{orderId} не найден.");
+            eventId = reader.GetInt32("id");
+            parterrePrice = reader.GetDecimal("parterre_price");
+            vipPrice = reader.GetDecimal("vip_price");
+            parterreCapacity = reader.GetInt32("parterre_capacity");
+            vipCapacity = reader.GetInt32("vip_capacity");
+        }
+
+        int alreadySold = CountSoldSeats(conn, tx, eventId, sector);
+        int capacity = sector == "VIP" ? vipCapacity : parterreCapacity;
+        if (alreadySold + 1 > capacity)
+            throw new InvalidOperationException(
+                $"Не хватает мест в секторе «{sector}»: свободно {Math.Max(0, capacity - alreadySold)}.");
+
+        decimal basePrice = sector == "VIP" ? vipPrice : parterrePrice;
+        decimal finalPrice = OrderCalculator.FinalSeatCost(sector, basePrice);
+        int seatNumber = alreadySold + 1;
+        int rowNumber = (seatNumber - 1) / SeatsPerRow + 1;
+
+        using (var cmd = new MySqlCommand(
+            @"INSERT INTO ticket_order_seats
+                (order_id, sector_type, row_num, seat_num, base_seat_price, final_seat_cost)
+              VALUES (@oid, @sector, @row, @seat, @base, @final)", conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@oid", orderId);
+            cmd.Parameters.AddWithValue("@sector", sector);
+            cmd.Parameters.AddWithValue("@row", rowNumber);
+            cmd.Parameters.AddWithValue("@seat", seatNumber);
+            cmd.Parameters.AddWithValue("@base", basePrice);
+            cmd.Parameters.AddWithValue("@final", finalPrice);
+            cmd.ExecuteNonQuery();
+        }
+
+        RecomputeTotals(conn, tx, orderId);
+        tx.Commit();
+    }
+
+    /// <summary>Удалить позицию из документа в статусе «Бронь (15 мин)».</summary>
+    /// <returns>Id заказа, к которому относилась позиция.</returns>
+    public static long RemoveSeat(long seatId)
+    {
+        using var conn = DatabaseHelper.GetConnection();
+        using var tx = conn.BeginTransaction();
+
+        long orderId;
+        string status;
+        using (var cmd = new MySqlCommand(
+            @"SELECT s.order_id, o.status
+              FROM ticket_order_seats s JOIN ticket_orders o ON o.id = s.order_id
+              WHERE s.id = @id", conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@id", seatId);
+            using var reader = cmd.ExecuteReader();
+            if (!reader.Read())
+                throw new InvalidOperationException("Позиция не найдена.");
+            orderId = Convert.ToInt64(reader["order_id"]);
+            status = reader.GetString("status");
+        }
+
+        EnsureBooking(status);
+
+        using (var cmd = new MySqlCommand(
+            "DELETE FROM ticket_order_seats WHERE id = @id", conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@id", seatId);
+            cmd.ExecuteNonQuery();
+        }
+
+        RecomputeTotals(conn, tx, orderId);
+        tx.Commit();
+        return orderId;
+    }
+
+    private static void EnsureBooking(string status)
+    {
+        if (!string.Equals(status, OrderStatus.Booking, StringComparison.Ordinal))
+            throw new InvalidOperationException(
+                $"Редактирование позиций разрешено только в статусе «{OrderStatus.Booking}». " +
+                $"Оплаченные и закрытые документы изменению не подлежат (текущий статус: «{status}»).");
+    }
+
+    // Пересчёт итогов документа на лету: сумма позиций + сервисный сбор (промокод обнуляет сбор).
+    private static void RecomputeTotals(MySqlConnection conn, MySqlTransaction tx, long orderId)
+    {
+        decimal seatsTotal;
+        using (var cmd = new MySqlCommand(
+            @"SELECT COALESCE(SUM(final_seat_cost), 0) FROM ticket_order_seats WHERE order_id = @id",
+            conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@id", orderId);
+            seatsTotal = Convert.ToDecimal(cmd.ExecuteScalar());
+        }
+
+        bool hasPromo = false;
+        using (var cmd = new MySqlCommand(
+            @"SELECT COALESCE(b.has_promo_subscription, 0)
+              FROM ticket_orders o LEFT JOIN ticket_buyers b ON b.id = o.buyer_id
+              WHERE o.id = @id", conn, tx))
+        {
+            cmd.Parameters.AddWithValue("@id", orderId);
+            hasPromo = Convert.ToBoolean(cmd.ExecuteScalar());
+        }
+
+        decimal fee = hasPromo
+            ? 0m
+            : Math.Round(seatsTotal * OrderCalculator.ServiceFeeRate, 2, MidpointRounding.AwayFromZero);
+
+        using var upd = new MySqlCommand(
+            "UPDATE ticket_orders SET service_fee = @fee, total_amount = @total WHERE id = @id",
+            conn, tx);
+        upd.Parameters.AddWithValue("@fee", fee);
+        upd.Parameters.AddWithValue("@total", seatsTotal + fee);
+        upd.Parameters.AddWithValue("@id", orderId);
+        upd.ExecuteNonQuery();
+    }
 
     // Id технического аккаунта онлайн-канала (роль «Клиент») либо null, если роль не заведена.
     private static int? ResolveOnlineAuthorId(MySqlConnection conn, MySqlTransaction tx)
