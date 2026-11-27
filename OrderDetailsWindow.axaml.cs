@@ -12,12 +12,17 @@ namespace Avalon;
 /// </summary>
 public partial class OrderDetailsWindow : Window
 {
-    private readonly long _orderId;
+    private long _orderId;
     private OrderDetailsViewModel _viewModel = null!;
 
-    public OrderDetailsWindow(long orderId)
+    public OrderDetailsWindow()
     {
         InitializeComponent();
+    }
+
+    /// <summary>Загружает документ по идентификатору заказа (вызывается перед показом окна).</summary>
+    public void LoadOrder(long orderId)
+    {
         _orderId = orderId;
         Reload();
     }

@@ -242,7 +242,8 @@ public partial class ManagerDashboardWindow : Window
     {
         if (sender is not Button btn || btn.Tag is not OrderData order) return;
 
-        var window = new OrderDetailsWindow(order.Id);
+        var window = new OrderDetailsWindow();
+        window.LoadOrder(order.Id);
         window.ShowDialog(this);
         LoadData();
     }
